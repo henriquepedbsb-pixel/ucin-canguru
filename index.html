@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prescrição UCIN Canguru</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;color:#1a2332;min-height:100vh}
+
+.header{background:linear-gradient(135deg,#0d3b6e,#1a6896);color:#fff;padding:18px 24px;text-align:center}
+.header h1{font-size:1.4rem;letter-spacing:.5px}
+.header p{font-size:.8rem;opacity:.8;margin-top:3px}
+
+.container{max-width:960px;margin:0 auto;padding:20px 14px}
+
+.card{background:#fff;border-radius:10px;padding:22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.card-title{font-size:.78rem;font-weight:700;color:#0d3b6e;text-transform:uppercase;letter-spacing:.6px;border-bottom:2px solid #1a6896;padding-bottom:7px;margin-bottom:16px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg label{font-size:.72rem;font-weight:600;color:#4a6274;text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select{border:1.5px solid #c8d6df;border-radius:6px;padding:8px 10px;font-size:.92rem;color:#1a2332;background:#f8fbfd;transition:border-color .2s}
+.fg input:focus,.fg select:focus{outline:none;border-color:#1a6896;background:#fff}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border:none;border-radius:7px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,#0d3b6e,#1a6896);color:#fff;box-shadow:0 3px 10px rgba(26,104,150,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(26,104,150,.45)}
+.btn-print{background:#f0f4f8;color:#0d3b6e;border:1.5px solid #1a6896}
+.btn-print:hover{background:#e2edf5}
+.btn-clear{background:#f8f0f0;color:#842029;border:1.5px solid #dc3545}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+/* ---------- PRESCRIPTION ---------- */
+#placeholder{text-align:center;color:#999;padding:28px 0;font-size:.92rem}
+.rx{display:none}
+.rx.on{display:block}
+
+.rx-head{text-align:center;padding-bottom:14px;border-bottom:2.5px solid #0d3b6e;margin-bottom:18px}
+.rx-head h2{font-size:1.1rem;color:#0d3b6e;margin-bottom:3px}
+.rx-head .rx-sub{font-size:.78rem;color:#777}
+
+.rx-sec{margin-bottom:16px}
+.rx-sec-title{font-size:.75rem;font-weight:700;color:#0d3b6e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.rx-sec-title::before{content:'';display:inline-block;width:3px;height:13px;background:#1a6896;border-radius:2px}
+
+.rx-item{padding:7px 0;border-bottom:1px solid #f0f4f8;font-size:.9rem}
+.rx-item:last-child{border-bottom:none}
+.rx-main{font-weight:600;color:#1a2332}
+.rx-detail{font-size:.8rem;color:#5a6e7f;font-style:italic;margin-top:2px}
+.rx-calc{font-size:.76rem;color:#6a7e8f;font-family:'Courier New',monospace;background:#f5f8fa;padding:4px 7px;border-radius:4px;margin-top:4px;line-height:1.5}
+.rx-ok{color:#198754;font-weight:600}
+
+.psummary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.psi{background:#f0f4f8;border-radius:6px;padding:7px 11px}
+.psi .lbl{font-size:.68rem;font-weight:600;color:#4a6274;text-transform:uppercase;margin-bottom:2px}
+.psi .val{font-weight:700;color:#1a2332;font-size:.9rem}
+
+.badge{display:inline-block;padding:2px 7px;border-radius:9px;font-size:.68rem;font-weight:700;text-transform:uppercase}
+.b-warn{background:#fff3cd;color:#856404;border:1px solid #f0ad4e}
+.b-info{background:#d1ecf1;color:#0c5460;border:1px solid #0ea5e9}
+.b-ok{background:#d4edda;color:#155724;border:1px solid #28a745}
+
+.alert{border-radius:7px;padding:9px 13px;font-size:.83rem;display:flex;align-items:flex-start;gap:8px;margin-top:6px;line-height:1.45}
+.alert-warn{background:#fff3cd;border:1.5px solid #f0ad4e;color:#78530a}
+.alert-info{background:#d1ecf1;border:1.5px solid #0ea5e9;color:#0c5460}
+.alert-danger{background:#f8d7da;border:1.5px solid #dc3545;color:#842029}
+.alert-lab{background:#e8d5f5;border:1.5px solid #9b59b6;color:#5b2c6f}
+
+.rx-footer{margin-top:24px;padding-top:12px;border-top:1px solid #e0e8ef;display:flex;justify-content:space-between;font-size:.75rem;color:#aaa}
+
+/* hidden FM85/formula options */
+#fm-opts,#formula-opts{display:none}
+
+@media(max-width:600px){.grid{grid-template-columns:1fr 1fr}.btn{padding:10px 16px;font-size:.88rem}}
+
+@media print{
+  body{background:#fff}
+  .header{background:#0d3b6e !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .form-card,.btn-row{display:none!important}
+  .card{box-shadow:none;padding:12px;margin-bottom:8px}
+  .rx{display:block!important}
+  #placeholder{display:none}
+  .alert{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>&#9877; UCIN Canguru — Prescrição Médica Neonatal</h1>
+  <p>Suporte à prescrição baseado em protocolo | RNPT e RNT</p>
+</div>
+
+<div class="container">
+
+<!-- ===== FORMULÁRIO ===== -->
+<div class="card form-card">
+  <div class="card-title">&#128203; Dados do Paciente</div>
+  <div class="grid">
+    <div class="fg">
+      <label>Nome / Leito (opcional)</label>
+      <input type="text" id="nome" placeholder="Ex: RN de Maria, L-14">
+    </div>
+    <div class="fg">
+      <label>Peso Atual (g) *</label>
+      <input type="number" id="peso" placeholder="Ex: 1450" min="300" max="6000">
+    </div>
+    <div class="fg">
+      <label>Peso Nascimento (g) *</label>
+      <input type="number" id="pesorn" placeholder="Ex: 1200" min="300" max="6000">
+    </div>
+    <div class="fg">
+      <label>IG Nascimento — semanas *</label>
+      <input type="number" id="igSem" placeholder="Ex: 29" min="22" max="42">
+    </div>
+    <div class="fg">
+      <label>IG Nascimento — dias</label>
+      <input type="number" id="igDias" placeholder="0 – 6" min="0" max="6" value="0">
+    </div>
+    <div class="fg">
+      <label>Dias de Vida *</label>
+      <input type="number" id="diasVida" placeholder="Ex: 18" min="0" max="400">
+    </div>
+  </div>
+
+  <div class="card-title" style="margin-top:20px">&#127868; Dieta Prescrita</div>
+  <div class="grid">
+    <div class="fg">
+      <label>Tipo de Dieta *</label>
+      <select id="tipoDieta" onchange="toggleDiet()">
+        <option value="">— selecione —</option>
+        <option value="lm">Leite Materno (LM) puro</option>
+        <option value="lm_fm85">LM + FM85</option>
+        <option value="formula">Fórmula infantil</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Volume (mL/kg/dia) *</label>
+      <input type="number" id="volKg" placeholder="Ex: 160" min="40" max="250">
+    </div>
+    <div class="fg">
+      <label>Nº de Tomadas/dia *</label>
+      <input type="number" id="tomadas" placeholder="Ex: 12" min="1" max="24">
+    </div>
+  </div>
+
+  <div id="fm-opts" class="grid" style="margin-top:10px">
+    <div class="fg">
+      <label>Sachês FM85 por dia</label>
+      <select id="sachets">
+        <option value="2">2 sachês/dia</option>
+        <option value="4">4 sachês/dia</option>
+        <option value="6" selected>6 sachês/dia</option>
+        <option value="8">8 sachês/dia</option>
+      </select>
+    </div>
+    <div class="fg" style="align-self:flex-end">
+      <label>&nbsp;</label>
+      <span style="font-size:.75rem;color:#666;padding:9px 0">1 sachê (1g) por 25 mL de LM — padrão 4%</span>
+    </div>
+  </div>
+
+  <div id="formula-opts" class="grid" style="margin-top:10px">
+    <div class="fg">
+      <label>Fórmula</label>
+      <select id="formula">
+        <option value="aptamil">Aptamil Premium 1</option>
+        <option value="nan_comfor">NAN Comfor 1</option>
+        <option value="nan_supreme">NAN Supreme 1</option>
+        <option value="alfamino">Alfamino</option>
+        <option value="pregomin">Pregomin Pepti</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="gerar()">&#9881; Gerar Prescrição</button>
+    <button class="btn btn-print" onclick="window.print()">&#128424; Imprimir / PDF</button>
+    <button class="btn btn-clear" onclick="limpar()">&#10006; Limpar</button>
+  </div>
+</div>
+
+<!-- ===== SAÍDA ===== -->
+<div class="card">
+  <div id="prescricao" class="rx"></div>
+  <div id="placeholder">Preencha os dados acima e clique em <strong>Gerar Prescrição</strong></div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ── helpers ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const f = (n, d=1) => isNaN(n)||n===null ? '—' : Number(n).toFixed(d);
+const fv = (n, d=1) => Number(n).toFixed(d);
+
+function toggleDiet() {
+  const t = $('tipoDieta').value;
+  $('fm-opts').style.display      = t==='lm_fm85'  ? 'grid' : 'none';
+  $('formula-opts').style.display = t==='formula'  ? 'grid' : 'none';
+}
+
+function limpar() {
+  ['nome','peso','pesorn','igSem','igDias','diasVida','volKg','tomadas']
+    .forEach(id => $(id).value = '');
+  $('igDias').value = '0';
+  $('tipoDieta').value = '';
+  $('sachets').value = '6';
+  $('formula').value = 'aptamil';
+  toggleDiet();
+  $('prescricao').className = 'rx';
+  $('prescricao').innerHTML = '';
+  $('placeholder').style.display = '';
+}
+
+// ── composições nutricionais ──────────────────────────────────────────────────
+const LM_100 = { kcal:67, prot:1.0, p:14, zn:0.15, vitD:2 }; // por 100 mL
+
+const FM85_SACHET = { kcal:4.3, prot:0.36, p:11, zn:0.24, vitD:35 }; // por sachê (1g/25mL)
+
+const FORMULAS = {
+  aptamil:    { nome:'Aptamil Premium 1', kcal:66, prot:1.3, p:40, zn:0.58, vitD:44 },
+  nan_comfor: { nome:'NAN Comfor 1',      kcal:67, prot:1.2, p:24, zn:0.55, vitD:52 },
+  nan_supreme:{ nome:'NAN Supreme 1',     kcal:67, prot:1.2, p:24, zn:0.52, vitD:36 },
+  alfamino:   { nome:'Alfamino',          kcal:66, prot:1.8, p:42, zn:0.66, vitD:40 },
+  pregomin:   { nome:'Pregomin Pepti',    kcal:66, prot:1.6, p:28, zn:0.50, vitD:44 },
+};
+
+// Fosfato tricálcico 12,9%: 25 mg P/mL (valor clínico adotado pela unidade)
+const FOSFATO_P_POR_ML = 25;
+
+// ── cálculo principal ─────────────────────────────────────────────────────────
+function gerar() {
+  // --- inputs ---
+  const peso     = parseFloat($('peso').value);
+  const pesorn   = parseFloat($('pesorn').value);
+  const igSem    = parseInt($('igSem').value);
+  const igDias   = parseInt($('igDias').value)||0;
+  const diasVida = parseInt($('diasVida').value);
+  const tipo     = $('tipoDieta').value;
+  const volKg    = parseFloat($('volKg').value);
+  const tomadas  = parseInt($('tomadas').value);
+  const sachets  = parseInt($('sachets').value)||0;
+  const formula  = $('formula').value;
+  const nome     = $('nome').value.trim();
+
+  // --- validação ---
+  const erros = [];
+  if (!peso    || isNaN(peso))    erros.push('Peso atual');
+  if (!pesorn  || isNaN(pesorn))  erros.push('Peso de nascimento');
+  if (!igSem   || isNaN(igSem))   erros.push('Semanas de IG');
+  if (isNaN(diasVida))             erros.push('Dias de vida');
+  if (!tipo)                       erros.push('Tipo de dieta');
+  if (!volKg   || isNaN(volKg))   erros.push('Volume mL/kg/dia');
+  if (!tomadas || isNaN(tomadas)) erros.push('Número de tomadas');
+  if (erros.length) { alert('Campos obrigatórios faltando:\n• '+erros.join('\n• ')); return; }
+
+  const pesoKg  = peso  / 1000;
+  const pesornKg= pesorn/ 1000;
+
+  // --- IG corrigida ---
+  const igNascDias    = igSem*7 + igDias;
+  const igCorrigDias  = igNascDias + diasVida;
+  const igCorrigSem   = Math.floor(igCorrigDias/7);
+  const igCorrigResto = igCorrigDias % 7;
+
+  // --- categorias ---
+  const menor32  = igSem < 32;
+  const entre3237= igSem >= 32 && igSem < 37;
+  const preT     = igSem < 37;
+
+  // --- volume total ---
+  const volTotal      = volKg * pesoKg;          // mL/dia
+  const volPorTomada  = volTotal / tomadas;       // mL/tomada
+
+  // --- nutrição da dieta ---
+  let dKcal=0, dProt=0, dP=0, dZn=0, dVitD=0;
+  let dieta_label='', calc_detail='';
+
+  if (tipo==='lm' || tipo==='lm_fm85') {
+    const fLM = volTotal/100;
+    dKcal += fLM*LM_100.kcal; dProt += fLM*LM_100.prot;
+    dP    += fLM*LM_100.p;    dZn   += fLM*LM_100.zn;
+    dVitD += fLM*LM_100.vitD;
+
+    if (tipo==='lm_fm85') {
+      dKcal += sachets*FM85_SACHET.kcal; dProt += sachets*FM85_SACHET.prot;
+      dP    += sachets*FM85_SACHET.p;    dZn   += sachets*FM85_SACHET.zn;
+      dVitD += sachets*FM85_SACHET.vitD;
+      dieta_label = `LM + FM85 (${sachets} sachês/dia)`;
+      calc_detail = `LM ${fv(volTotal,1)} mL × [67kcal, 1,0g prot, 14mg P, 0,15mg Zn, 2UI VitD]/100mL`
+        +`\n+ FM85: ${sachets} sachê(s) × [4,3kcal; 0,36g prot; 11mg P; 0,24mg Zn; 35UI VitD]/sachê`;
+    } else {
+      dieta_label = 'LM puro';
+      calc_detail = `LM ${fv(volTotal,1)} mL × [67kcal, 1,0g prot, 14mg P, 0,15mg Zn, 2UI VitD]/100mL`;
+    }
+  } else {
+    const fm = FORMULAS[formula];
+    const fF = volTotal/100;
+    dKcal=fF*fm.kcal; dProt=fF*fm.prot; dP=fF*fm.p; dZn=fF*fm.zn; dVitD=fF*fm.vitD;
+    dieta_label = fm.nome;
+    calc_detail = `${fm.nome} ${fv(volTotal,1)} mL × [${fm.kcal}kcal, ${fm.prot}g prot, ${fm.p}mg P, ${fm.zn}mg Zn, ${fm.vitD}UI VitD]/100mL`;
+  }
+
+  const kcalKg = dKcal/pesoKg;
+  const protKg = dProt/pesoKg;
+
+  // --- Ferro ---
+  let ferroRateMgKg;
+  if      (pesorn < 1000) ferroRateMgKg = 4;
+  else if (pesorn < 1500) ferroRateMgKg = 3;
+  else if (pesorn < 2500) ferroRateMgKg = 2;
+  else                     ferroRateMgKg = 1;
+  const ferroDoseMg = ferroRateMgKg * pesoKg;
+  const ferroGotas  = Math.ceil((ferroDoseMg/1.25)*2)/2; // arredonda p/ 0,5
+
+  // --- Fósforo ---
+  const pAlvoMin = 75  * pesoKg;   // mg/dia
+  const pAlvoMax = 100 * pesoKg;
+  const pAlvoMid = 87.5* pesoKg;
+  const pDieta   = dP;
+  const pNec     = Math.max(0, pAlvoMid - pDieta);
+  const pVolMl   = pNec / FOSFATO_P_POR_ML;
+  const pVolTom  = pVolMl / tomadas;
+  const pSufic   = pDieta >= pAlvoMin;
+
+  // --- Zinco ---
+  const znRateMgKg = menor32 ? 2 : 1;
+  const znAlvo     = znRateMgKg * pesoKg;
+  const znDieta    = dZn;
+  const znNec      = Math.max(0, znAlvo - znDieta);
+  const znVolMl    = znNec / 5; // solução 5 mg/mL
+
+  // --- Vitamina D ---
+  let vitDAlvo;
+  if      (igSem < 32) vitDAlvo = 800;
+  else if (igSem < 37) vitDAlvo = 600;
+  else                  vitDAlvo = 400;
+  const vitDDieta  = dVitD;
+  const vitDNec    = Math.max(0, vitDAlvo - vitDDieta);
+  const gotas200   = Math.ceil(vitDNec/200);
+  const gotas400   = Math.ceil(vitDNec/400);
+
+  // --- Alertas ---
+  const alertUSG  = diasVida >= 0 && diasVida <= 7;
+  const alertEco  = igSem < 34;
+
+  // Lab a cada 21 dias (diasVida > 0)
+  const labHoje   = diasVida > 0 && diasVida % 21 === 0;
+  const proxLab   = Math.ceil((diasVida+1)/21)*21;
+
+  // 28 dias de Idade Corrigida (RNPT) ou 28 dias de vida (Termo)
+  const diasTermoDiff   = (40-igSem)*7 - igDias;
+  const idadeCorrigDias = preT ? Math.max(0, diasVida - diasTermoDiff) : diasVida;
+  const alerta28apx     = preT ? (idadeCorrigDias>=24 && idadeCorrigDias<28) : (diasVida>=24 && diasVida<28);
+  const alerta28ating   = preT ? idadeCorrigDias >= 28 : diasVida >= 28;
+
+  // 44 semanas corrigidas (rotina final de lab)
+  const alert44sem = igCorrigSem >= 44;
+
+  // --- formatação da data atual ---
+  const agora = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  // ══════════════════════════════════════════════════════
+  //  MONTAR HTML DA PRESCRIÇÃO
+  // ══════════════════════════════════════════════════════
+  let h = `
+  <div class="rx-head">
+    <h2>PRESCRIÇÃO MÉDICA — UCIN CANGURU</h2>
+    <div class="rx-sub">Data/Hora: ${agora} &nbsp;|&nbsp; Protocolo Neonatal</div>
+  </div>`;
+
+  // — IDENTIFICAÇÃO —
+  h += `<div class="rx-sec"><div class="rx-sec-title">Identificação do Paciente</div><div class="psummary">`;
+  if (nome) h += psi('Paciente', nome);
+  h += psi('Peso Atual', `${peso.toLocaleString('pt-BR')} g`);
+  h += psi('Peso Nasc.', `${pesorn.toLocaleString('pt-BR')} g`);
+  h += psi('IG Nasc.', `${igSem}sem ${igDias}d`);
+  h += psi('Idade Crono.', `${diasVida} dias`);
+  h += psi('IG Corrigida', `${igCorrigSem}sem ${igCorrigResto}d`);
+  h += `<div class="psi"><div class="lbl">Categoria</div><div class="val">
+    <span class="badge ${menor32?'b-warn':preT?'b-info':'b-ok'}">
+      ${menor32?'< 32 sem':entre3237?'32–37 sem':'≥ 37 sem'}
+    </span></div></div>`;
+  h += `</div></div>`;
+
+  // — DIETA —
+  const sachFeedInfo = (tipo==='lm_fm85')
+    ? ` — distribuir ${sachets} sachê(s) em ${Math.min(sachets,tomadas)} tomada(s) fortificada(s)`
+    : '';
+  h += `
+  <div class="rx-sec">
+    <div class="rx-sec-title">Dieta Enteral</div>
+    <div class="rx-item">
+      <div class="rx-main">${dieta_label} — ${fv(volKg,0)} mL/kg/dia = ${fv(volTotal,1)} mL/dia
+        em ${tomadas} tomadas de ${fv(volPorTomada,1)} mL${sachFeedInfo}</div>
+      <div class="rx-detail"><em>(${fv(kcalKg,1)} kcal/kg/dia &nbsp;·&nbsp; ${fv(protKg,2)} g prot/kg/dia &nbsp;·&nbsp; ${fv(volKg,0)} mL/kg/dia)</em></div>
+      ${menor32 ? `<div class="rx-calc">
+▸ ${calc_detail}
+→ Aporte estimado da dieta: ${fv(dKcal,1)} kcal &nbsp;|&nbsp; ${fv(dProt,2)} g prot &nbsp;|&nbsp; ${fv(dP,1)} mg P &nbsp;|&nbsp; ${fv(dZn,2)} mg Zn &nbsp;|&nbsp; ${fv(dVitD,0)} UI Vit D / dia</div>` : ''}
+    </div>
+  </div>`;
+
+  // — SUPLEMENTAÇÃO —
+  h += `<div class="rx-sec"><div class="rx-sec-title">Suplementação</div>`;
+
+  // 1. Ferro
+  h += `
+  <div class="rx-item">
+    <div class="rx-main">1. Sulfato ferroso &mdash; ${fv(ferroGotas, ferroGotas%1===0?0:1)} gotas/dia VO</div>
+    <div class="rx-detail"><em>(PN ${pesorn}g → ${ferroRateMgKg} mg/kg/dia × ${fv(pesoKg,3)} kg
+      = ${fv(ferroDoseMg,2)} mg/dia ÷ 1,25 mg/gota = ${fv(ferroDoseMg/1.25,1)} gotas →
+      <strong>${fv(ferroGotas, ferroGotas%1===0?0:1)} gotas/dia</strong>)</em></div>
+  </div>`;
+
+  // 2. Fósforo
+  if (pSufic) {
+    h += `
+    <div class="rx-item">
+      <div class="rx-main">2. Fosfato tricálcico 12,9% &mdash; <span class="rx-ok">não necessário</span></div>
+      <div class="rx-detail"><em>(Dieta fornece ${fv(dP,1)} mg P/dia = ${fv(dP/pesoKg,1)} mg/kg/dia
+        &ge; alvo mínimo de 75 mg/kg/dia = ${fv(pAlvoMin,1)} mg/dia ✓)</em></div>
+    </div>`;
+  } else {
+    h += `
+    <div class="rx-item">
+      <div class="rx-main">2. Fosfato tricálcico 12,9% &mdash; ${fv(pVolMl,1)} mL/dia VO,
+        divididos em ${tomadas} tomadas (${fv(pVolTom,2)} mL/tomada)</div>
+      <div class="rx-detail"><em>(Alvo 75–100 mg/kg/dia = ${fv(pAlvoMin,1)}–${fv(pAlvoMax,1)} mg/dia
+        [meta: ${fv(pAlvoMid,1)} mg/dia]. Dieta: ${fv(dP,1)} mg/dia.
+        Necessidade adicional: ${fv(pNec,1)} mg/dia ÷ 25,76 mg P/mL = ${fv(pVolMl,1)} mL
+        de Fosfato tricálcico 12,9%)</em></div>
+      ${menor32 ? `<div class="rx-calc">▸ Fosfato tricálcico 12,9%: Ca₃(PO₄)₂ → P = 61,94/310,18 ≈ 19,97% → 129 mg/mL × 19,97% = 25,76 mg P/mL</div>` : ''}
+    </div>`;
+  }
+
+  // 3. Zinco
+  if (znNec <= 0.005) {
+    h += `
+    <div class="rx-item">
+      <div class="rx-main">3. Zinco (sol. 5 mg/mL) &mdash; <span class="rx-ok">não necessário</span></div>
+      <div class="rx-detail"><em>(Dieta fornece ${fv(dZn,2)} mg Zn/dia ≥ alvo ${fv(znAlvo,2)} mg/dia ✓)</em></div>
+    </div>`;
+  } else {
+    h += `
+    <div class="rx-item">
+      <div class="rx-main">3. Zinco (solução 5 mg/mL) &mdash; ${fv(znVolMl,2)} mL/dia VO</div>
+      <div class="rx-detail"><em>(${znRateMgKg} mg/kg/dia × ${fv(pesoKg,3)} kg
+        = ${fv(znAlvo,2)} mg/dia. Dieta: ${fv(dZn,2)} mg/dia.
+        Necessidade adicional: ${fv(znNec,2)} mg/dia ÷ 5 mg/mL
+        = <strong>${fv(znVolMl,2)} mL/dia</strong>)</em></div>
+    </div>`;
+  }
+
+  // 4. Vitamina D
+  if (vitDNec <= 0) {
+    h += `
+    <div class="rx-item">
+      <div class="rx-main">4. Colecalciferol &mdash; <span class="rx-ok">dieta supre o alvo (${vitDAlvo} UI)</span></div>
+      <div class="rx-detail"><em>(Dieta fornece ${fv(dVitD,0)} UI/dia ≥ alvo ${vitDAlvo} UI/dia ✓)</em></div>
+    </div>`;
+  } else {
+    h += `
+    <div class="rx-item">
+      <div class="rx-main">4. Colecalciferol &mdash; ${fv(vitDNec,0)} UI/dia VO</div>
+      <div class="rx-detail"><em>(Alvo: ${vitDAlvo} UI/dia. Dieta: ${fv(dVitD,0)} UI/dia.
+        Necessidade: ${fv(vitDNec,0)} UI/dia
+        → <strong>${gotas200} gotas/dia</strong> se 200 UI/gota
+        &nbsp;|&nbsp; ${gotas400} gotas/dia se 400 UI/gota — ajustar conforme apresentação disponível)</em></div>
+    </div>`;
+  }
+
+  h += `</div>`; // /suplementação
+
+  // — ORIENTAÇÕES NÃO FARMACOLÓGICAS —
+  h += `
+  <div class="rx-sec">
+    <div class="rx-sec-title">Orientações Não Farmacológicas</div>
+    <div class="rx-item">
+      <div class="rx-main">Seguimento conjunto com Fonoaudiologia e Fisioterapia</div>
+    </div>
+    ${preT ? `<div class="rx-item">
+      <div class="rx-main">Posição Canguru — indicada (RNPT ${igSem} semanas, se clinicamente estável)</div>
+    </div>` : ''}
+  </div>`;
+
+  // — RASTREIO E MONITORIZAÇÃO —
+  h += `<div class="rx-sec"><div class="rx-sec-title">Rastreio e Monitorização</div>`;
+
+  if (alertUSG) {
+    h += `<div class="alert alert-info">&#9877; <div><strong>USG Transfontanelar:</strong> Solicitar agora — ${diasVida}º dia de vida (janela: 1–7 dias de vida).</div></div>`;
+  }
+  if (alertEco) {
+    h += `<div class="alert alert-info">&#9877; <div><strong>Ecocardiograma:</strong> Solicitar 1× (IG nascimento ${igSem} sem &lt; 34 semanas).</div></div>`;
+  }
+
+  // Lab
+  if (labHoje) {
+    h += `<div class="alert alert-lab">&#128300; <div><strong>LABORATÓRIO — Hoje (${diasVida}º dia de vida):</strong><br>
+      Hemograma completo &bull; Ferro sérico &bull; Ferritina &bull; Reticulócitos<br>
+      25-OH Vitamina D &bull; Cálcio &bull; Fósforo &bull; Fosfatase Alcalina (FAL) &bull; Ureia &bull; Creatinina</div></div>`;
+  } else if (alert44sem) {
+    h += `<div class="alert alert-lab">&#128300; <div><strong>LABORATÓRIO — Rotina 44ª semana corrigida (IG corrigida atual: ${igCorrigSem}sem):</strong><br>
+      Hemograma completo &bull; Ferro sérico &bull; Ferritina &bull; Reticulócitos<br>
+      25-OH Vitamina D &bull; Cálcio &bull; Fósforo &bull; FAL &bull; Ureia &bull; Creatinina</div></div>`;
+  } else {
+    const diasAteLab = proxLab - diasVida;
+    h += `<div class="alert alert-info">&#128300; <div>Próxima coleta laboratorial (Anemia/DMO): <strong>${diasVida}º dia → prevista no ${proxLab}º dia de vida</strong>
+      (faltam ${diasAteLab} dias) — rotina a cada 21 dias até 40 semanas, depois nova rotina com 44 semanas.</div></div>`;
+  }
+
+  // Alerta 28 dias
+  if (alerta28ating) {
+    h += `<div class="alert alert-warn">&#9888; <div><strong>ATENÇÃO — 28 dias atingidos:</strong> ${preT
+      ? `RNPT com ${Math.round(idadeCorrigDias)} dias de Idade Corrigida pós-termo.`
+      : `RN a Termo com ${diasVida} dias de vida.`}
+      Verificar critérios de transição e seguimento ambulatorial (${igCorrigSem}sem corrigida).</div></div>`;
+  } else if (alerta28apx) {
+    h += `<div class="alert alert-warn">&#9888; <div><strong>ALERTA:</strong> ${preT
+      ? `RNPT se aproximando de 28 dias de Idade Corrigida pós-termo (${Math.round(idadeCorrigDias)} dias).`
+      : `RN a Termo se aproximando de 28 dias de vida (${diasVida} dias).`}
+      Iniciar planejamento de alta / transição de cuidados.</div></div>`;
+  }
+
+  h += `</div>`; // /rastreio
+
+  // — RODAPÉ —
+  h += `
+  <div class="rx-footer">
+    <span>Gerado em ${agora}</span>
+    <span>UCIN Canguru · Prescrição eletrônica de suporte</span>
+  </div>`;
+
+  $('prescricao').innerHTML = h;
+  $('prescricao').className = 'rx on';
+  $('placeholder').style.display = 'none';
+  $('prescricao').scrollIntoView({behavior:'smooth'});
+}
+
+// helper mini-card de resumo do paciente
+function psi(lbl, val) {
+  return `<div class="psi"><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`;
+}
+</script>
+</body>
+</html>
