@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -153,7 +154,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;color:#1a2332;mi
       <select id="sachets">
         <option value="2">2 sachês/dia</option>
         <option value="4">4 sachês/dia</option>
-        <option value="6" selected>6 sachês/dia</option>
+        <option value="6" selected>* 6 sachês/dia</option>
         <option value="8">8 sachês/dia</option>
       </select>
     </div>
@@ -229,8 +230,14 @@ const FORMULAS = {
   pregomin:   { nome:'Pregomin Pepti',    kcal:66, prot:1.6, p:28, zn:0.50, vitD:44 },
 };
 
-// Fosfato tricálcico 12,9%: 25 mg P/mL (valor clínico adotado pela unidade)
+// Fosfato tricálcico 12,9%: 25 mg P/mL
 const FOSFATO_P_POR_ML = 25;
+// Fosfato: SEMPRE 4 tomadas fixas (6/6h), independente das tomadas da dieta
+const FOSFATO_TOMADAS = 4;
+
+// Polivitamínico (Growvit BB / Pedianutri): 400 UI VitD em 12 gotas
+// Dose fixa: 6 gts 12/12h = 12 gotas/dia = 400 UI VitD/dia
+const POLIVIT_VITD_DIA = 400; // UI/dia — fixo conforme bula
 
 // ── cálculo principal ─────────────────────────────────────────────────────────
 function gerar() {
@@ -273,8 +280,8 @@ function gerar() {
   const preT     = igSem < 37;
 
   // --- volume total ---
-  const volTotal      = volKg * pesoKg;          // mL/dia
-  const volPorTomada  = volTotal / tomadas;       // mL/tomada
+  const volTotal      = volKg * pesoKg;
+  const volPorTomada  = volTotal / tomadas;
 
   // --- nutrição da dieta ---
   let dKcal=0, dProt=0, dP=0, dZn=0, dVitD=0;
@@ -315,16 +322,16 @@ function gerar() {
   else if (pesorn < 2500) ferroRateMgKg = 2;
   else                     ferroRateMgKg = 1;
   const ferroDoseMg = ferroRateMgKg * pesoKg;
-  const ferroGotas  = Math.ceil((ferroDoseMg/1.25)*2)/2; // arredonda p/ 0,5
+  const ferroGotas  = Math.ceil((ferroDoseMg/1.25)*2)/2;
 
-  // --- Fósforo ---
-  const pAlvoMin = 75  * pesoKg;   // mg/dia
+  // --- Fósforo (distribuído em 4 tomadas fixas 6/6h) ---
+  const pAlvoMin = 75  * pesoKg;
   const pAlvoMax = 100 * pesoKg;
   const pAlvoMid = 87.5* pesoKg;
   const pDieta   = dP;
   const pNec     = Math.max(0, pAlvoMid - pDieta);
   const pVolMl   = pNec / FOSFATO_P_POR_ML;
-  const pVolTom  = pVolMl / tomadas;
+  const pVolTom  = pVolMl / FOSFATO_TOMADAS; // sempre 4 tomadas (6/6h)
   const pSufic   = pDieta >= pAlvoMin;
 
   // --- Zinco ---
@@ -332,36 +339,36 @@ function gerar() {
   const znAlvo     = znRateMgKg * pesoKg;
   const znDieta    = dZn;
   const znNec      = Math.max(0, znAlvo - znDieta);
-  const znVolMl    = znNec / 5; // solução 5 mg/mL
+  const znVolMl    = znNec / 5;
 
-  // --- Vitamina D ---
+  // --- Polivitamínico ---
+  // Growvit BB / Pedianutri: 400 UI VitD em 12 gotas → 6 gts 12/12h = 400 UI/dia
+  const polivitVitD = POLIVIT_VITD_DIA;
+
+  // --- Vitamina D (desconta dieta + polivitamínico) ---
   let vitDAlvo;
   if      (igSem < 32) vitDAlvo = 800;
   else if (igSem < 37) vitDAlvo = 600;
   else                  vitDAlvo = 400;
   const vitDDieta  = dVitD;
-  const vitDNec    = Math.max(0, vitDAlvo - vitDDieta);
+  const vitDTotal  = vitDDieta + polivitVitD; // fontes já cobertas
+  const vitDNec    = Math.max(0, vitDAlvo - vitDTotal);
   const gotas200   = Math.ceil(vitDNec/200);
   const gotas400   = Math.ceil(vitDNec/400);
 
   // --- Alertas ---
   const alertUSG  = diasVida >= 0 && diasVida <= 7;
   const alertEco  = igSem < 34;
-
-  // Lab a cada 21 dias (diasVida > 0)
   const labHoje   = diasVida > 0 && diasVida % 21 === 0;
   const proxLab   = Math.ceil((diasVida+1)/21)*21;
 
-  // 28 dias de Idade Corrigida (RNPT) ou 28 dias de vida (Termo)
   const diasTermoDiff   = (40-igSem)*7 - igDias;
   const idadeCorrigDias = preT ? Math.max(0, diasVida - diasTermoDiff) : diasVida;
   const alerta28apx     = preT ? (idadeCorrigDias>=24 && idadeCorrigDias<28) : (diasVida>=24 && diasVida<28);
   const alerta28ating   = preT ? idadeCorrigDias >= 28 : diasVida >= 28;
-
-  // 44 semanas corrigidas (rotina final de lab)
   const alert44sem = igCorrigSem >= 44;
 
-  // --- formatação da data atual ---
+  // --- data atual ---
   const agora = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
   // ══════════════════════════════════════════════════════
@@ -427,12 +434,12 @@ function gerar() {
   } else {
     h += `
     <div class="rx-item">
-      <div class="rx-main">2. Fosfato tricálcico 12,9% &mdash; ${fv(pVolMl,1)} mL/dia VO,
-        divididos em ${tomadas} tomadas (${fv(pVolTom,2)} mL/tomada)</div>
+      <div class="rx-main">2. Fosfato tricálcico 12,9% &mdash; ${fv(pVolMl,1)} mL/dia VO
+        em 4 tomadas de ${fv(pVolTom,2)} mL a cada 6h (6/6h)</div>
       <div class="rx-detail"><em>(Alvo 75–100 mg/kg/dia = ${fv(pAlvoMin,1)}–${fv(pAlvoMax,1)} mg/dia
         [meta: ${fv(pAlvoMid,1)} mg/dia]. Dieta: ${fv(dP,1)} mg/dia.
-        Necessidade adicional: ${fv(pNec,1)} mg/dia ÷ 25,76 mg P/mL = ${fv(pVolMl,1)} mL
-        de Fosfato tricálcico 12,9%)</em></div>
+        Necessidade adicional: ${fv(pNec,1)} mg/dia ÷ 25 mg P/mL = ${fv(pVolMl,1)} mL
+        de Fosfato tricálcico 12,9% → ${fv(pVolTom,2)} mL/dose 6/6h)</em></div>
       ${menor32 ? `<div class="rx-calc">▸ Fosfato tricálcico 12,9%: Ca₃(PO₄)₂ → P = 61,94/310,18 ≈ 19,97% → 129 mg/mL × 19,97% = 25,76 mg P/mL</div>` : ''}
     </div>`;
   }
@@ -455,21 +462,29 @@ function gerar() {
     </div>`;
   }
 
-  // 4. Vitamina D
+  // 4. Polivitamínico
+  h += `
+  <div class="rx-item">
+    <div class="rx-main">4. Polivitamínico (Growvit BB / Pedianutri ou equiv.) &mdash; 6 gotas VO 12/12h</div>
+    <div class="rx-detail"><em>(Dose fixa · 400 UI Vit D/dia — 6 gotas 12/12h = 12 gotas/dia)</em></div>
+  </div>`;
+
+  // 5. Vitamina D
   if (vitDNec <= 0) {
     h += `
     <div class="rx-item">
-      <div class="rx-main">4. Colecalciferol &mdash; <span class="rx-ok">dieta supre o alvo (${vitDAlvo} UI)</span></div>
-      <div class="rx-detail"><em>(Dieta fornece ${fv(dVitD,0)} UI/dia ≥ alvo ${vitDAlvo} UI/dia ✓)</em></div>
+      <div class="rx-main">5. Colecalciferol &mdash; <span class="rx-ok">não necessário</span></div>
+      <div class="rx-detail"><em>(Alvo: ${vitDAlvo} UI/dia. Dieta: ${fv(vitDDieta,0)} UI + Polivitamínico: ${polivitVitD} UI
+        = ${fv(vitDTotal,0)} UI/dia ≥ alvo ✓)</em></div>
     </div>`;
   } else {
     h += `
     <div class="rx-item">
-      <div class="rx-main">4. Colecalciferol &mdash; ${fv(vitDNec,0)} UI/dia VO</div>
-      <div class="rx-detail"><em>(Alvo: ${vitDAlvo} UI/dia. Dieta: ${fv(dVitD,0)} UI/dia.
-        Necessidade: ${fv(vitDNec,0)} UI/dia
-        → <strong>${gotas200} gotas/dia</strong> se 200 UI/gota
-        &nbsp;|&nbsp; ${gotas400} gotas/dia se 400 UI/gota — ajustar conforme apresentação disponível)</em></div>
+      <div class="rx-main">5. Colecalciferol &mdash; ${fv(vitDNec,0)} UI/dia VO</div>
+      <div class="rx-detail"><em>(Alvo: ${vitDAlvo} UI/dia − Dieta: ${fv(vitDDieta,0)} UI − Polivit: ${polivitVitD} UI
+        = <strong>${fv(vitDNec,0)} UI/dia adicionais</strong>
+        → ${gotas200} gota(s)/dia se 200 UI/gota &nbsp;|&nbsp; ${gotas400} gota(s)/dia se 400 UI/gota
+        — ajustar conforme apresentação disponível)</em></div>
     </div>`;
   }
 
@@ -497,7 +512,6 @@ function gerar() {
     h += `<div class="alert alert-info">&#9877; <div><strong>Ecocardiograma:</strong> Solicitar 1× (IG nascimento ${igSem} sem &lt; 34 semanas).</div></div>`;
   }
 
-  // Lab
   if (labHoje) {
     h += `<div class="alert alert-lab">&#128300; <div><strong>LABORATÓRIO — Hoje (${diasVida}º dia de vida):</strong><br>
       Hemograma completo &bull; Ferro sérico &bull; Ferritina &bull; Reticulócitos<br>
@@ -512,7 +526,6 @@ function gerar() {
       (faltam ${diasAteLab} dias) — rotina a cada 21 dias até 40 semanas, depois nova rotina com 44 semanas.</div></div>`;
   }
 
-  // Alerta 28 dias
   if (alerta28ating) {
     h += `<div class="alert alert-warn">&#9888; <div><strong>ATENÇÃO — 28 dias atingidos:</strong> ${preT
       ? `RNPT com ${Math.round(idadeCorrigDias)} dias de Idade Corrigida pós-termo.`
