@@ -322,7 +322,7 @@ function gerar() {
   else if (pesorn < 2500) ferroRateMgKg = 2;
   else                     ferroRateMgKg = 1;
   const ferroDoseMg = ferroRateMgKg * pesoKg;
-  const ferroGotas  = Math.ceil((ferroDoseMg/1.25)*2)/2;
+  const ferroGotas  = Math.ceil(ferroDoseMg/1.25);
 
   // --- Fósforo (distribuído em 4 tomadas fixas 6/6h) ---
   const pAlvoMin = 75  * pesoKg;
@@ -417,10 +417,10 @@ function gerar() {
   // 1. Ferro
   h += `
   <div class="rx-item">
-    <div class="rx-main">1. Sulfato ferroso &mdash; ${fv(ferroGotas, ferroGotas%1===0?0:1)} gotas/dia VO</div>
+    <div class="rx-main">1. Sulfato ferroso &mdash; ${ferroGotas} gotas/dia VO</div>
     <div class="rx-detail"><em>(PN ${pesorn}g → ${ferroRateMgKg} mg/kg/dia × ${fv(pesoKg,3)} kg
-      = ${fv(ferroDoseMg,2)} mg/dia ÷ 1,25 mg/gota = ${fv(ferroDoseMg/1.25,1)} gotas →
-      <strong>${fv(ferroGotas, ferroGotas%1===0?0:1)} gotas/dia</strong>)</em></div>
+      = ${fv(ferroDoseMg,2)} mg/dia ÷ 1,25 mg/gota = ${fv(ferroDoseMg/1.25,2)} →
+      <strong>${ferroGotas} gotas/dia</strong>)</em></div>
   </div>`;
 
   // 2. Fósforo
