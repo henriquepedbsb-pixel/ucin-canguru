@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Neonatal — NeoFax Nov. 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0c1a28;--ink2:#2d3e50;--ink3:#6b7f90;--paper:#f4f1ec;--paper2:#e9e5de;--white:#ffffff;--accent:#1a5276;--accent2:#2980b9;--accent-lt:#d6eaf8;--green:#1a6b3c;--green-lt:#e9f7ef;--red:#c0392b;--red-lt:#fdf0ef;--amber:#935116;--amber-lt:#fef5e7;--border:#ccc8be;--mono:"IBM Plex Mono",monospace;--sans:"IBM Plex Sans",system-ui,sans-serif;--shadow:0 1px 6px rgba(12,26,40,.10)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh}
+.hdr{background:var(--accent);color:#fff;padding:12px 20px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.hdr-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.hdr h1{font-family:var(--mono);font-size:1rem;font-weight:500}
+.hdr span{font-size:.72rem;opacity:.65;margin-top:1px;display:block}
+.hdr-badge{background:rgba(255,255,255,.15);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:.7rem;white-space:nowrap}
+.wrap{max-width:1160px;margin:0 auto;padding:16px 12px 60px;display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+@media(max-width:780px){.wrap{grid-template-columns:1fr}.panel-sticky{position:static!important}}
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.ch{background:var(--paper2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px}
+.ch h2{font-family:var(--sans);font-size:.75rem;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)}
+.cb{padding:16px}
+.panel-sticky{position:sticky;top:60px;max-height:calc(100vh - 70px);overflow-y:auto}
+.pt-badge{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;border-radius:8px;padding:14px;margin-bottom:14px;font-family:var(--mono)}
+.pt-name{font-size:.9rem;font-weight:500;border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:8px;margin-bottom:10px}
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pt-stat .val{font-size:1.1rem;font-weight:500}
+.pt-stat .lbl{font-size:.65rem;opacity:.7;margin-top:1px}
+.ig-tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:500;margin-top:8px;font-family:var(--mono)}
+.ig-pP{background:#fef3c7;color:#92400e}.ig-pM{background:#dbeafe;color:#1e3a5f}.ig-T{background:#dcfce7;color:#14532d}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.72rem;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.unit{font-weight:400;color:var(--ink3);font-family:var(--mono);font-size:.68rem}
+.field input,.field select{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:.84rem;background:#fafaf8;color:var(--ink);transition:border-color .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(41,128,185,.14)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.btn-clr{width:100%;padding:7px;border-radius:6px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-family:var(--sans);font-size:.78rem;font-weight:500;cursor:pointer;margin-top:4px}
+.btn-clr:hover{background:var(--red-lt)}
+.srch{position:relative;margin-bottom:12px}
+.srch input{width:100%;padding:8px 12px 8px 32px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:.84rem;background:#fafaf8}
+.srch input:focus{outline:none;border-color:var(--accent2)}
+.srch-ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--ink3)}
+.tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.tab{padding:3px 11px;border-radius:20px;font-size:.7rem;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);transition:all .12s}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab:hover:not(.on){border-color:var(--accent2);color:var(--accent)}
+.dgrid{display:flex;flex-direction:column;gap:8px}
+.dc{border:1.5px solid var(--border);border-radius:9px;background:var(--white);cursor:pointer;overflow:hidden;transition:box-shadow .12s,border-color .12s}
+.dc:hover{border-color:var(--accent2);box-shadow:var(--shadow)}
+.dc.open{border-color:var(--accent);background:var(--accent-lt)}
+.dch{padding:9px 13px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.dn{font-weight:600;font-size:.86rem;color:var(--ink)}
+.di{font-size:.7rem;color:var(--ink3);margin-top:2px}
+.dcat{font-size:.65rem;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:1px}
+.c-cardio{background:#fee2e2;color:#991b1b}.c-antibio{background:#d1fae5;color:#065f46}
+.c-analg{background:#ede9fe;color:#5b21b6}.c-neuro{background:#fef9c3;color:#713f12}
+.c-resp{background:#dbeafe;color:#1e40af}.c-gi{background:#fce7f3;color:#9d174d}
+.c-electro{background:#e0f2fe;color:#075985}.c-hormon{background:#f3e8ff;color:#6b21a8}
+.c-antifung{background:#ecfdf5;color:#064e3b}.c-vit{background:#fff7ed;color:#9a3412}
+.c-sedac{background:#fef3c7;color:#92400e}.c-diur{background:#e0f2fe;color:#075985}
+.c-other{background:#f3f4f6;color:#374151}
+.dd{display:none;padding:13px;border-top:1px solid var(--border);background:#f9f8f5;animation:sl .15s ease}
+.dd.open{display:block}
+@keyframes sl{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.box{background:var(--white);border:1.5px solid var(--accent2);border-radius:7px;padding:11px 13px;margin-bottom:10px}
+.box-t{font-family:var(--mono);font-size:.66rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.dose-l{font-family:var(--mono);font-size:1rem;font-weight:500;color:var(--accent);margin-bottom:3px}
+.dose-c{font-family:var(--mono);font-size:.75rem;color:var(--ink3)}
+.dose-calc{font-family:var(--mono);font-size:.96rem;font-weight:500;color:var(--green)}
+.dose-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.dose-sep{width:2px;background:var(--accent-lt);border-radius:2px;align-self:stretch;flex-shrink:0}
+.ib{font-size:.73rem;margin-bottom:9px}
+.ib-l{font-size:.66rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.warn-b,.alert-b{padding:7px 10px;border-radius:6px;font-size:.75rem;margin-bottom:8px;display:flex;gap:7px}
+.warn-b{background:var(--amber-lt);border:1px solid #fcd34d;color:var(--amber)}
+.alert-b{background:var(--red-lt);border:1px solid #fca5a5;color:var(--red)}
+.prep-b{background:#f0f4ff;border:1px solid #bfcfee;border-radius:6px;padding:8px 10px;font-size:.73rem;color:#1e3a6e;margin-bottom:8px}
+.ref{font-size:.66rem;color:var(--ink3);font-family:var(--mono);margin-top:8px}
+.dil-box{background:#f0fdf4;border:1.5px solid #86efac;border-radius:7px;padding:11px 13px;margin-bottom:8px}
+.dil-box .box-t{color:#166534}
+.dil-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+.dil-item{min-width:120px}
+.dil-val{font-family:var(--mono);font-size:.96rem;font-weight:600;color:#15803d}
+.dil-lbl{font-size:.65rem;color:#166534;text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.dil-step{font-family:var(--mono);font-size:.78rem;color:#166534;margin-top:7px;line-height:1.6;background:#dcfce7;border-radius:5px;padding:6px 9px}
+.no-pt{background:var(--amber-lt);border:1.5px dashed #fbbf24;border-radius:8px;padding:18px;text-align:center;color:var(--amber);font-size:.8rem;margin-bottom:10px}
+.empty{text-align:center;padding:40px 16px;color:var(--ink3)}
+.empty .big{font-size:2rem;margin-bottom:8px}
+.inf-box{background:#eff8ff;border:1.5px solid #90caf9;border-radius:7px;padding:11px 13px;margin-bottom:8px}
+.inf-box .box-t{color:#1565c0}
+.inf-line{font-family:var(--mono);font-size:.82rem;color:#0d47a1;line-height:1.5}
+.kids-badge{background:#fff3e0;border:1px solid #ffcc80;border-radius:6px;padding:6px 10px;font-size:.73rem;color:#e65100;margin-bottom:8px;display:flex;gap:6px;align-items:flex-start}
+.disc{max-width:1160px;margin:0 auto;padding:0 12px 24px;font-size:.7rem;color:var(--ink3);text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-inner">
+    <div>
+      <h1>&#128138; Calculadora Neonatal</h1>
+      <span>Doses por peso, IG e SC &middot; Baseado em NeoFax Nov. 2024</span>
+    </div>
+    <div class="hdr-badge">199 medicamentos</div>
+  </div>
+</header>
+<div class="wrap">
+<aside class="panel-sticky">
+  <div class="card">
+    <div class="ch"><span>&#128118;</span><h2>Dados do Paciente</h2></div>
+    <div class="cb">
+      <div id="pt-badge" class="pt-badge" style="display:none">
+        <div class="pt-name" id="bd-n">&mdash;</div>
+        <div class="pt-grid">
+          <div class="pt-stat"><div class="val" id="bd-w">&mdash;</div><div class="lbl">PESO (g)</div></div>
+          <div class="pt-stat"><div class="val" id="bd-wk">&mdash;</div><div class="lbl">PESO (kg)</div></div>
+          <div class="pt-stat"><div class="val" id="bd-sc">&mdash;</div><div class="lbl">SC (m&sup2;) *=auto</div></div>
+          <div class="pt-stat"><div class="val" id="bd-ig">&mdash;</div><div class="lbl">IG NASC</div></div>
+          <div class="pt-stat"><div class="val" id="bd-pma">&mdash;</div><div class="lbl">IG CORR (PMA)</div></div>
+          <div class="pt-stat"><div class="val" id="bd-dv">&mdash;</div><div class="lbl">DIAS DE VIDA</div></div>
+        </div>
+        <div style="margin-top:8px;text-align:center"><span class="ig-tag" id="bd-cat">&mdash;</span></div>
+      </div>
+      <div class="field"><label>Nome / Leito</label><input id="nome" type="text" placeholder="Ex: RN Silva &middot; Leito 5" oninput="atualizar()"></div>
+      <div class="f2">
+        <div class="field"><label>Peso atual <span class="unit">g</span></label><input id="peso" type="number" min="300" max="6000" step="1" placeholder="1200" oninput="atualizar()"></div>
+        <div class="field"><label>SC <span class="unit">m&sup2; — calculada pelo peso; edite se necessário</span></label><input id="sc" type="number" min="0.01" max="0.5" step="0.001" placeholder="auto" oninput="atualizar()"></div>
+      </div>
+      <div class="f3">
+        <div class="field"><label>IG nasc <span class="unit">sem</span></label><input id="igs" type="number" min="22" max="42" step="1" placeholder="28" oninput="atualizar()"></div>
+        <div class="field"><label><span class="unit">+dias</span></label><input id="igd" type="number" min="0" max="6" step="1" placeholder="0" oninput="atualizar()"></div>
+        <div class="field"><label>Dias vida</label><input id="dv" type="number" min="0" max="500" step="1" placeholder="10" oninput="atualizar()"></div>
+      </div>
+      <button class="btn-clr" onclick="limpar()">&#128465; Limpar dados</button>
+    </div>
+  </div>
+</aside>
+<main>
+  <div class="card">
+    <div class="ch"><span>&#128203;</span><h2>Medicamentos &mdash; NeoFax Nov. 2024</h2></div>
+    <div class="cb">
+      <div class="srch"><span class="srch-ic">&#128269;</span><input id="busca" type="text" placeholder="Buscar medicamento ou indicacao..." oninput="filtrar()"></div>
+      <div class="tabs" id="tabs">
+        <span class="tab on" data-c="todos" onclick="selCat(this)">Todos</span>
+        <span class="tab" data-c="cardio" onclick="selCat(this)">Cardiovascular</span>
+        <span class="tab" data-c="antibio" onclick="selCat(this)">Antibioticos</span>
+        <span class="tab" data-c="analg" onclick="selCat(this)">Analgesia</span>
+        <span class="tab" data-c="neuro" onclick="selCat(this)">Neurologico</span>
+        <span class="tab" data-c="resp" onclick="selCat(this)">Respiratorio</span>
+        <span class="tab" data-c="gi" onclick="selCat(this)">GI / Metab</span>
+        <span class="tab" data-c="electro" onclick="selCat(this)">Eletrolitos</span>
+        <span class="tab" data-c="diur" onclick="selCat(this)">Diureticos</span>
+        <span class="tab" data-c="sedac" onclick="selCat(this)">Sedacao</span>
+        <span class="tab" data-c="antifung" onclick="selCat(this)">Antifungicos</span>
+        <span class="tab" data-c="vit" onclick="selCat(this)">Vitaminas</span>
+        <span class="tab" data-c="hormon" onclick="selCat(this)">Hormonal</span>
+        <span class="tab" data-c="other" onclick="selCat(this)">Outros</span>
+      </div>
+      <div class="dgrid" id="dgrid"></div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="disc">&#9888;&#65039; <strong>Uso exclusivo de profissionais de saude.</strong> Confirme sempre doses com o NeoFax atual e protocolos institucionais. Calculadora baseada em <strong>NeoFax Nov. 2024 (Micromedex)</strong>. Nao substitui julgamento clinico.</div>
+
+<script>
+var P={};
+function calcSC(kg){return +((0.1*Math.pow(kg,0.6723)).toFixed(3));}
+function atualizar(){
+  var wg=parseFloat(document.getElementById('peso').value)||null;
+  var igs=parseInt(document.getElementById('igs').value)||null;
+  var igd=parseInt(document.getElementById('igd').value)||0;
+  var dv=parseInt(document.getElementById('dv').value)||0;
+  var nome=document.getElementById('nome').value;
+  var sc=parseFloat(document.getElementById('sc').value)||null;
+  if(!wg){P={};document.getElementById('pt-badge').style.display='none';recalc();return;}
+  var wk=wg/1000;
+  if(!sc)sc=calcSC(wk);
+  var pmaSem=null,pmaDias=null;
+  if(igs){var totD=igs*7+igd+dv;pmaSem=Math.floor(totD/7);pmaDias=totD%7;}
+  P={wg:wg,wk:wk,sc:sc,igs:igs,igd:igd,dv:dv,pmaSem:pmaSem,pmaDias:pmaDias,nome:nome};
+  document.getElementById('pt-badge').style.display='block';
+  document.getElementById('bd-n').textContent=nome||'Paciente';
+  document.getElementById('bd-w').textContent=wg;
+  document.getElementById('bd-wk').textContent=wk.toFixed(3);
+  var scManual=parseFloat(document.getElementById('sc').value)||null;
+  document.getElementById('bd-sc').textContent=sc.toFixed(3)+(scManual?'':' *');
+  document.getElementById('bd-ig').textContent=igs?igs+'+'+igd:'--';
+  document.getElementById('bd-pma').textContent=pmaSem?pmaSem+'+'+pmaDias:'--';
+  document.getElementById('bd-dv').textContent=dv;
+  var cat=document.getElementById('bd-cat');
+  if(!igs){cat.textContent='IG nao informada';cat.className='ig-tag ig-pM';}
+  else if(igs<28){cat.textContent='< 28s -- Extremo prematuro';cat.className='ig-tag ig-pP';}
+  else if(igs<32){cat.textContent='< 32s -- Muito prematuro';cat.className='ig-tag ig-pP';}
+  else if(igs<37){cat.textContent='32-37s -- Prematuro';cat.className='ig-tag ig-pM';}
+  else{cat.textContent='>= 37s -- A termo';cat.className='ig-tag ig-T';}
+  recalc();
+}
+function limpar(){
+  ['nome','peso','sc','igs','igd','dv'].forEach(function(id){document.getElementById(id).value='';});
+  P={};document.getElementById('pt-badge').style.display='none';recalc();
+}
+
+var DRUGS=[
+{id:'adenosina',nome:'Adenosina',cat:'cardio',indicacao:'TSV (Taquicardia Supraventricular Paroxistica)',
+prep:'3 mg/mL ampola 2 mL. Diluir para 0,3 mg/mL em SF se dose < 0,2 mL.',
+doses:[
+{label:'Dose inicial',val:0.05,unid:'mg/kg',via:'IV bolus rapido',freq:'repetir a cada 1-2 min se necessario'},
+{label:'Dose maxima',val:0.3,unid:'mg/kg',via:'IV bolus',freq:'dose unica ou 12 mg (o que for menor)',maxAbs:12,unidMax:'mg'}],
+alertas:['Injetar RAPIDO na veia mais proximal ao coracao; flush de SF imediatamente apos','ECG continuo obrigatorio','Apneia relatada em RNPT -- suporte ventilatorio disponivel','Aminofilina/Teofilina/Cafeina ANTAGONIZAM o efeito'],
+monit:'ECG e PA continuos.',dil:{apres:'3 mg/mL (amp 2 mL = 6 mg)',alvo:0.3,diluente:'SF 0,9%',vol_final:20,unit:'mg',nota:'Para RN < 5 kg: diluir 1 mL (3 mg) em 9 mL SF -> 0,3 mg/mL'},
+ref:'NeoFax Nov. 2024 -- Adenosine'},
+
+{id:'alprostadil',nome:'Alprostadil (PGE1)',cat:'cardio',indicacao:'Manutencao do Canal Arterial em cardiopatias ductus-dependentes',
+prep:'500 mcg/mL ampola 1 mL (alcool). Diluir para <= 20 mcg/mL. Trocar a cada 24h.',
+doses:[
+{label:'Dose inicial',val:0.05,unid:'mcg/kg/min',via:'IV continuo',freq:'infusao; titular pelo efeito'},
+{label:'Manutencao',val:0.01,unid:'mcg/kg/min',via:'IV continuo',freq:'infusao -- pode ser tao baixa quanto 0,01'}],
+infusao:{regra:'Regra dos 6: Peso(kg) x 6 mg em 100 mL -> 1 mL/h = 1 mcg/kg/min',calcVal:6},
+alertas:['Apneia em 10-15% (ter suporte ventilatório disponivel)','Febre e vasodilatacao cutanea frequentes','Obstrucao pilorica e proliferacao ossea cortical com uso > 120 h'],
+monit:'PA, SpO2, gasometria.',dil:{apres:'500 mcg/mL (amp 1 mL)',alvo_inf:10,diluente:'SG 5%',vol_final:50,unit:'mcg',infusao_continua:true,nota:'Trocar solucao a cada 24h. Manter < 20 mcg/mL.'},
+ref:'NeoFax Nov. 2024 -- Alprostadil'},
+
+{id:'amiodarona',nome:'Amiodarona',cat:'cardio',indicacao:'Taquiarritmias refratarias (TSV, TV, JET pos-operatorio)',
+prep:'IV: Prefira Nexterone 1,5 mg/mL premix (sem benzil alcool). Concentracao IV <= 2 mg/mL em veia periferica.',
+doses:[
+{label:'Ataque IV',val:5,unid:'mg/kg',via:'IV central (preferivelmente)',freq:'infundir em 20-60 min'},
+{label:'Manutencao IV',val:10,unid:'mg/kg/dia',via:'IV continuo',freq:'= 7-15 mcg/kg/min'},
+{label:'Oral',val:5,unid:'mg/kg/dose',via:'VO',freq:'12/12h'}],
+alertas:['Bradicardia, hipotensao e bloqueio AV com infusao rapida','Monitorar tireoidie e funcao hepatica com uso prolongado','Multiplas interacoes: digoxina, warfarina, fenitoina'],
+monit:'ECG continuo durante ataque. Tireoidie e funcao hepatica periodicamente.',dil:{apres:'50 mg/mL (amp 3 mL = 150 mg)',alvo:1.5,diluente:'SG 5%',vol_final:100,unit:'mg',nota:'Nexterone premix 1,5 mg/mL preferido. Periferica: <= 2 mg/mL. Nunca em SF.'},
+ref:'NeoFax Nov. 2024 -- Amiodarone'},
+
+{id:'captopril',nome:'Captopril',cat:'cardio',indicacao:'Hipertensao moderada-grave; ICC (reducao de pos-carga)',
+prep:'Comprimidos 12,5-100 mg. Solucao oral 1 mg/mL. Administrar 1h antes da alimentacao.',
+doses:[
+{label:'Dose inicial',val:0.01,unid:'mg/kg/dose',via:'VO',freq:'12/12h -- aumentar gradualmente'},
+{label:'Dose usual',val:0.1,unid:'mg/kg/dose',via:'VO',freq:'6/6h a 24/24h (conforme resposta)',maxAbs:1.5,unidMax:'mg/kg/dose'}],
+alertas:['RNPT e RN sao muito sensiveis -- monitorar PA de perto','Reducao do fluxo renal e cerebral com doses altas','Hipercalemia com diureticos poupadores de K+'],
+monit:'PA frequente apos 1a dose. Funcao renal e potassio.',dil:{apres:'Comp 12,5-25 mg ou sol oral 1 mg/mL',unit:'mg',vo_only:true,nota:'Administrar 1h antes da alimentacao. Sol oral 1 mg/mL: aspirar volume = dose(mg) em mL.'},
+ref:'NeoFax Nov. 2024 -- Captopril'},
+
+{id:'digoxina',nome:'Digitalizacao (Digoxina)',cat:'cardio',indicacao:'ICC com contratilidade diminuida; TSV, flutter e FA atrial',
+prep:'Injetavel 100 mcg/mL e elixir 50 mcg/mL. Diluir injetavel >= 4x antes de usar.',
+doses:[
+{label:'Digital. IV -- PMA <=29s',val:15,unid:'mcg/kg TOTAL',via:'IV',freq:'dividir em 3 doses iguais em 24h'},
+{label:'Digital. IV -- PMA 30-36s',val:20,unid:'mcg/kg TOTAL',via:'IV',freq:'3 doses iguais em 24h'},
+{label:'Digital. IV -- PMA 37-48s',val:30,unid:'mcg/kg TOTAL',via:'IV',freq:'3 doses iguais em 24h'},
+{label:'Manut IV -- PMA <=29s',val:4,unid:'mcg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'Manut IV -- PMA 30-36s',val:5,unid:'mcg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'Manut IV -- PMA 37-48s',val:4,unid:'mcg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'Manutencao VO (= IV x 1,25)',val:null,unid:'Ver PMA acima',via:'VO',freq:'Doses VO 25% maiores que IV'}],
+alertas:['Margem terapeutica estreita -- nível terapeutico: 0,8-2 ng/mL','Toxicidade precipitada por hipocalemia, hipomagnesemia, hipercalcemia','Interacoes: amiodarona, indometacina, espironolactona'],
+monit:'FC e ritmo. ECG periodico. K+ e Mg2+ serici. Funcao renal.',dil:{apres:'100 mcg/mL (0,1 mg/mL) injetavel; Elixir 50 mcg/mL',alvo:0.01,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mcg',nota:'Diluir amp 1:4 antes do uso (25 mcg/mL). VO: Elixir 50 mcg/mL.'},
+ref:'NeoFax Nov. 2024 -- Digoxin'},
+
+{id:'dobutamina',nome:'Dobutamina',cat:'cardio',indicacao:'Disfuncao miocardica; hipoperfusao e hipotensao com baixo debito',
+prep:'250 mg/20 mL (12,5 mg/mL). Diluir em SF ou SG5%. Estavel 24h.',
+doses:[
+{label:'Dose usual',val:'2-25',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao; iniciar baixo e titular'}],
+infusao:{regra:'Regra dos 6: Peso(kg) x 6 mg em 100 mL -> 1 mL/h = 1 mcg/kg/min',calcVal:6},
+alertas:['Taquicardia e arritmias -- observar','Flebite e inflamacao local por extravasamento'],
+monit:'FC e PA continuos.',dil:{apres:'12,5 mg/mL (amp 20 mL = 250 mg)',alvo_inf:1,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',infusao_continua:true,nota:'Regra dos 6 aplicada. Concentracao max: 5 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- DOBUTamine'},
+
+{id:'dopamina',nome:'Dopamina',cat:'cardio',indicacao:'Hipotensao; choque septico refratario a volume',
+prep:'40-160 mg/mL ampolas. Diluir em SF ou SG5%. Estavel 24h. NAO misturar com solucoes alcalinas.',
+doses:[
+{label:'Dose baixa (efeito dopaminergico/renal)',val:'1-4',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao'},
+{label:'Dose media (inotropico)',val:'5-10',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao'},
+{label:'Dose alta (vasopressor)',val:'10-20',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao'}],
+infusao:{regra:'Regra dos 6: Peso(kg) x 6 mg em 100 mL -> 1 mL/h = 1 mcg/kg/min',calcVal:6},
+alertas:['Acesso central preferencial -- NECROSE GRAVE por extravasamento','Tratar extravasamento com Fentolamina 0,5 mg/mL SC na area afetada','Nao usar em hipovolemia nao corrigida'],
+monit:'FC e PA continuos. Debito urinario e perfusao periferica.',dil:{apres:'40 mg/mL (amp 10 mL = 400 mg)',alvo_inf:1.6,diluente:'SF 0,9% ou SG 5%',vol_final:250,unit:'mg',infusao_continua:true,nota:'Regra dos 6 aplicada. Nao misturar com alcalinos.'},
+ref:'NeoFax Nov. 2024 -- DOPamine'},
+
+{id:'epinefrina',nome:'Epinefrina (Adrenalina)',cat:'cardio',indicacao:'PCR neonatal; bradicardia grave; choque septico refratario',
+prep:'USAR 0,1 mg/mL (1:10.000) para doses individuais. USAR 1 mg/mL para preparar infusao. Proteger da luz.',
+doses:[
+{label:'RCP -- IV/IO (1:10.000)',val:0.01,unid:'mg/kg',via:'IV/IO',freq:'cada 3-5 min; seguir com flush 0,5-1 mL SF'},
+{label:'RCP -- ETT (1:10.000)',val:0.05,unid:'mg/kg',via:'Endotraqueal',freq:'0,5-1 mL/kg da solucao 1:10.000'},
+{label:'Hipotensao/Choque -- infusao',val:'0,1-1',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao -- titular'},
+{label:'Bradicardia c/ pulso (dose baixa IV)',val:1,unid:'mcg/kg',via:'IV central',freq:'repetir conforme resposta'}],
+infusao:{regra:'Regra dos 6: Peso(kg) x 0,06 mg em 100 mL -> 1 mL/h = 0,01 mcg/kg/min'},
+alertas:['ALTO RISCO -- verificar concentracao ANTES de usar','Hiperglicemia, taquicardia, HIC e arritmias','NECROSE por extravasamento -- tratar com fentolamina'],
+monit:'FC e PA invasiva continuos.',dil:{apres:'1 mg/mL (1:1000) ou 0,1 mg/mL (1:10.000)',alvo:0.1,diluente:'SF 0,9%',vol_final:10,unit:'mg',infusao_continua:true,nota:'RCP: usar 1:10.000 diretamente. Infusao: diluir 1 mg/mL para concentracao desejada.'},
+ref:'NeoFax Nov. 2024 -- EPINEPHrine'},
+
+{id:'milrinona',nome:'Milrinona',cat:'cardio',indicacao:'Baixo debito cardiaco pos-cirurgia; HPPN com disfuncao ventricular',
+prep:'1 mg/mL vials. Concentracao maxima para infusao: 200 mcg/mL.',
+doses:[
+{label:'Bolus (com cautela em RNPT < 30s)',val:50,unid:'mcg/kg',via:'IV',freq:'em 15-60 min; em RNPT < 30s infundir em 3h'},
+{label:'Manutencao',val:'0,3-0,75',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao por 35h ou mais'}],
+infusao:{regra:'Peso(kg) x 0,06 mg em 100 mL -> 0,1 mcg/kg/min por 1 mL/h'},
+alertas:['Hipotensao transitoria apos bolus (5-9%)','Taquicardia em RNPT < 30s com dose alta','Garantir volemia adequada antes','Trombocitopenia relatada'],
+monit:'PA, FC, ECG continuos. Funcao renal e eletrolitos.',dil:{apres:'1 mg/mL (vials 10/20 mL)',alvo:0.2,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',infusao_continua:true,nota:'Concentracao max: 200 mcg/mL = 0,2 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Milrinone'},
+
+{id:'nicardipina',nome:'Nicardipina',cat:'cardio',indicacao:'Hipertensao aguda grave',
+prep:'2,5 mg/mL ampolas. Diluir para 0,1 mg/mL. Proteger da luz.',
+doses:[
+{label:'Dose inicial',val:0.5,unid:'mcg/kg/min',via:'IV continuo (acesso central)',freq:'infusao'},
+{label:'Manutencao usual',val:'0,5-2',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao -- titular'}],
+alertas:['Taquicardia reflexa dose-dependente'],
+monit:'PA e FC continuos.',dil:{apres:'2,5 mg/mL (amp 10 mL = 25 mg)',alvo:0.1,diluente:'SF 0,9% ou SG 5%',vol_final:250,unit:'mg',infusao_continua:true,nota:'Diluir para 0,1 mg/mL. Proteger da luz.'},
+ref:'NeoFax Nov. 2024 -- NiCARdipine'},
+
+{id:'nitroprussiato',nome:'Nitroprussiato de Sodio',cat:'cardio',indicacao:'Emergencia hipertensiva; reducao de pos-carga em ICC refrataria',
+prep:'50 mg/frasco. Reconstituir com SG5%; diluir 50-1000 mcg/mL. PROTEGER DA LUZ com aluminio.',
+doses:[
+{label:'Dose inicial',val:0.3,unid:'mcg/kg/min',via:'IV continuo',freq:'infusao; titular a cada poucos min'},
+{label:'Maximo',val:10,unid:'mcg/kg/min',via:'IV continuo',freq:'NAO manter > 10 min no maximo'},
+{label:'ICC refrataria',val:'0,3-4',unid:'mcg/kg/min',via:'IV continuo',freq:'max 6 mcg/kg/min'}],
+alertas:['Toxicidade por cianeto com uso > 72h ou doses > 3 mcg/kg/min','Monitorar tiocianato (< 50 mcg/mL) e cianeto eritrocitario','Hipotensao grave e taquicardia'],
+monit:'PA invasiva continua. Gasometria (acidose = toxicidade). Funcao hepatica e renal diaria.',dil:{apres:'50 mg/frasco liofilizado',alvo:0.2,diluente:'SG 5%',vol_final:250,unit:'mg',infusao_continua:true,nota:'PROTEGER DA LUZ com aluminio. Reconstituir em SG5% exclusivamente.'},
+ref:'NeoFax Nov. 2024 -- Sodium Nitroprusside'},
+
+{id:'norepinefrina',nome:'Norepinefrina',cat:'cardio',indicacao:'Choque septico -- warm shock refratario',
+prep:'1 mg/mL ampola 4 mL. Diluir em SG5% (concentracao final 100 mcg/mL). Estavel 24h protegida da luz.',
+doses:[
+{label:'IG > 35 semanas',val:'0,2-2',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao; titular a cada 30 min'}],
+alertas:['Acesso central preferencial','Extravasamento causa necrose -- tratar com fentolamina','Monitorar PA a cada 2 min no inicio'],
+monit:'PA a cada 2 min no inicio.',dil:{apres:'1 mg/mL (amp 4 mL = 4 mg)',alvo:0.1,diluente:'SG 5%',vol_final:100,unit:'mg',infusao_continua:true,nota:'Concentracao final 0,1 mg/mL = 100 mcg/mL. Proteger da luz.'},
+ref:'NeoFax Nov. 2024 -- Norepinephrine'},
+
+{id:'propranolol',nome:'Propranolol',cat:'cardio',indicacao:'Taquiarritmias; HAS; Tetralogia de Fallot; hemangioma infantil',
+prep:'Oral: 4 mg/mL ou 8 mg/mL solucao. Injetavel 1 mg/mL.',
+doses:[
+{label:'IV (taquiarritmia)',val:0.01,unid:'mg/kg/dose',via:'IV lento (10 min)',freq:'6/6h (max 0,15 mg/kg/dose)'},
+{label:'VO (taquiarritmia)',val:0.25,unid:'mg/kg/dose',via:'VO',freq:'6/6h (max 3,5 mg/kg/dose)'},
+{label:'Hemangioma (>= 5 sem)',val:0.6,unid:'mg/kg/dose',via:'VO',freq:'2x/dia; aumentar semana a semana ate 1,7 mg/kg/dose'}],
+alertas:['Monitorar FC e glicemia','Broncoespasmo -- evitar em DBP','Nao usar com bloqueadores de Ca'],
+monit:'FC, PA, glicemia na introducao.',dil:{apres:'1 mg/mL injetavel; Sol oral 4-8 mg/mL',alvo:0.1,diluente:'SG 5%',vol_final:10,unit:'mg',nota:'IV: infundir em 10 min. VO: sol 4 mg/mL ou 8 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Propranolol'},
+
+{id:'sildenafil',nome:'Sildenafil',cat:'cardio',indicacao:'HPPN refrataria ao NO inalatorio (ultima linha)',
+prep:'Oral: Revatio 10 mg/mL suspensao. IV: 0,8 mg/mL.',
+doses:[
+{label:'IV -- bolus',val:0.4,unid:'mg/kg',via:'IV (3h)',freq:'seguido de infusao'},
+{label:'IV -- manutencao',val:1.6,unid:'mg/kg/dia',via:'IV continuo',freq:'= 0,067 mg/kg/h'},
+{label:'Oral',val:'0,5-1',unid:'mg/kg/dose',via:'VO',freq:'3x ao dia'}],
+alertas:['FDA: evitar uso cronico em criancas (aumento de mortalidade em ensaio)','Hipotensao sistemica -- monitorar PA','Risco de retinopatia em RNPT extremo -- retina deve estar vascularizada'],
+monit:'SpO2 e PA continuos.',dil:{apres:'0,8 mg/mL IV; Suspensao oral 10 mg/mL',alvo:0.8,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',infusao_continua:true,nota:'IV premix 0,8 mg/mL. Oral: Revatio 10 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Sildenafil'},
+
+{id:'hidralazina',nome:'Hidralazina',cat:'cardio',indicacao:'Hipertensao moderada-grave; reducao de pos-carga em ICC',
+prep:'IV: 20 mg/mL. Diluir para 1 mg/mL. Oral: comprimidos 10-100 mg.',
+doses:[
+{label:'IV',val:'0,1-0,5',unid:'mg/kg/dose',via:'IV (30s)',freq:'6/6h a 8/8h (max 2 mg/kg/dose)'},
+{label:'VO (aprox 2x dose IV)',val:'0,25-1',unid:'mg/kg/dose',via:'VO',freq:'6/6h a 8/8h'}],
+alertas:['Taquicardia reflexa -- associar betabloqueador se necessario','Monitorar PA e FC frequentemente'],
+monit:'PA frequente. Guaiaco de fezes.',dil:{apres:'20 mg/mL injetavel',alvo:1,diluente:'SF 0,9%',vol_final:20,unit:'mg',nota:'Diluir para 1 mg/mL. Administrar em 30s. VO aprox 2x dose IV.'},
+ref:'NeoFax Nov. 2024 -- HydrALAZINE'},
+
+{id:'ibuprofen_cap',nome:'Ibuprofeno IV/Oral (CAP)',cat:'cardio',indicacao:'Fechamento do Canal Arterial Persistente -- alternativa a indometacina',
+prep:'IV: 5 mg/mL (100 mg/20 mL). Oral: suspensao 100 mg/5 mL.',
+doses:[
+{label:'Dose 1',val:10,unid:'mg/kg',via:'IV ou VO',freq:'dose unica'},
+{label:'Doses 2 e 3',val:5,unid:'mg/kg',via:'IV ou VO',freq:'24 e 48h apos dose 1'}],
+alertas:['Contraindicado: CrS > 1,8; plaquetas < 60.000; ECN; sangramento ativo; oliguria','Menor efeito renal e menor risco de NEC vs indometacina','Pode alterar intervalo da amicacina (+10h)'],
+monit:'Diurese, eletrolitos, creatinina, plaquetas.',dil:{apres:'5 mg/mL IV (amp 4 mL = 20 mg); Oral 100 mg/5 mL',alvo:5,diluente:'SG 5%',vol_final:10,unit:'mg',nota:'IV: usar solucao 5 mg/mL diretamente ou diluir em SG5%.'},
+ref:'NeoFax Nov. 2024 -- Ibuprofen'},
+
+{id:'indometacina',nome:'Indometacina (CAP/IVH)',cat:'cardio',indicacao:'Fechamento do CAP (1a linha AINE); profilaxia de HIV/CAP',
+prep:'1 mg/frasco liofilizado. Reconstituir com 1-2 mL SF sem conservantes.',
+doses:[
+{label:'CAP < 48h -- Doses 1,2,3',val:0.2,unid:'mg/kg',via:'IV (20-30 min)',freq:'12/12h a 24/24h x 3 doses'},
+{label:'CAP 2-7 dias -- Doses 2 e 3',val:0.2,unid:'mg/kg',via:'IV',freq:'12/12h a 24/24h'},
+{label:'CAP > 7 dias -- Doses 2 e 3',val:0.25,unid:'mg/kg',via:'IV',freq:'12/12h a 24/24h'},
+{label:'Profilaxia IVH',val:0.1,unid:'mg/kg',via:'IV',freq:'24/24h x 3 doses (nas 1as 6-24h de vida)'}],
+alertas:['Contraindicada: CrS > 1,8; plaquetas < 60.000; ECN suspeita; sangramento ativo; oliguria','Hipoglicemia frequente -- aumentar infusao de glicose 2 mg/kg/min','NAO usar com corticosteroides (perfuracao GI)'],
+monit:'Diurese, glicemia, CrS, ureia, eletrolitos, plaquetas.',dil:{apres:'1 mg/frasco liofilizado',alvo:0.1,diluente:'SF sem conservantes',vol_final:10,unit:'mg',nota:'Reconstituir com 1-2 mL SF -> 0,5-1 mg/mL. Diluir para 0,1 mg/mL. Usar IMEDIATAMENTE.'},
+ref:'NeoFax Nov. 2024 -- Indomethacin'},
+
+{id:'ampicilina',nome:'Ampicilina',cat:'antibio',indicacao:'Sepse neonatal precoce (empirica); meningite; GBS',
+prep:'Po para injecao. Reconstituir (max 100 mg/mL IV). Usar DENTRO de 1 hora apos preparo.',
+doses:[
+{label:'PMA <=29s, 0-28 dias',val:50,unid:'mg/kg/dose',via:'IV push lento',freq:'12/12h'},
+{label:'PMA <=29s, > 28 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 30-36s, 0-14 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA >= 45s',val:50,unid:'mg/kg/dose',via:'IV',freq:'6/6h'},
+{label:'Meningite (GBS)',val:100,unid:'mg/kg/dose',via:'IV',freq:'conforme intervalo por PMA acima'}],
+alertas:['Solucao instavel -- usar em 1h apos preparo'],
+monit:'Funcao renal, hepatica e hematopoietica em tratamentos prolongados.',dil:{apres:'Po p/ injecao 250 mg, 500 mg, 1 g',alvo:50,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Max 100 mg/mL IV push. Usar em 1h apos preparo (instavel).'},
+ref:'NeoFax Nov. 2024 -- Ampicillin'},
+
+{id:'amicacina',nome:'Amicacina',cat:'antibio',indicacao:'Infeccoes por gram-negativos; segunda linha em sepse neonatal',
+prep:'250 mg/mL -- diluir para 2,5-10 mg/mL IV.',
+doses:[
+{label:'<= 800g, < 14 dias',val:16,unid:'mg/kg/dose',via:'IV (20 min)',freq:'48/48h'},
+{label:'<= 800g, >= 14 dias',val:20,unid:'mg/kg/dose',via:'IV',freq:'42/42h'},
+{label:'801-1200g, < 14 dias',val:16,unid:'mg/kg/dose',via:'IV',freq:'42/42h'},
+{label:'801-1200g, >= 14 dias',val:20,unid:'mg/kg/dose',via:'IV',freq:'36/36h'},
+{label:'1201-2000g, < 14 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'36/36h'},
+{label:'1201-2000g, >= 14 dias',val:18,unid:'mg/kg/dose',via:'IV',freq:'30/30h'},
+{label:'2001-2800g, < 14 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'36/36h'},
+{label:'2001-2800g, >= 14 dias',val:18,unid:'mg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'> 2800g, < 14 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'30/30h'},
+{label:'> 2800g, >= 14 dias',val:18,unid:'mg/kg/dose',via:'IV',freq:'20/20h'}],
+alertas:['Nefrotoxica e ototoxica','Pico (1h pos-infusao 20 min) alvo > 24 mg/L; vale (antes da dose) < 3 mg/L','Ajustar intervalo em hipoxia-isquemia/hipotermia','Coadministracao com ibuprofeno: prolongar intervalo em 10h'],
+monit:'Concentracoes sericas apos 3a dose. Funcao renal e auditiva.',dil:{apres:'250 mg/mL (amp 2 mL = 500 mg)',alvo:5,diluente:'SF 0,9% ou SG 5%',vol_final:20,unit:'mg',nota:'Diluir para 2,5-10 mg/mL. Infundir em 30 min.'},
+ref:'NeoFax Nov. 2024 -- Amikacin'},
+
+{id:'azitromicina',nome:'Azitromicina',cat:'antibio',indicacao:'Pertussis (Bordetella); Clamydia trachomatis; erradicacao de Ureaplasma',
+kids:'KIDs: Evitar em neonatos (exceto pertussis ou pneumonia por Clamydia) -- risco de estenose pilórica.',
+prep:'Oral: suspensao 20 mg/mL. IV: 500 mg po -- reconstituir, diluir para 1-2 mg/mL; infundir em >= 60 min.',
+doses:[
+{label:'Pertussis (VO)',val:10,unid:'mg/kg/dose',via:'VO',freq:'1x ao dia x 5 dias'},
+{label:'Clamydia -- oftalmia (VO)',val:20,unid:'mg/kg/dose',via:'VO',freq:'1x ao dia x 3 dias'},
+{label:'Ureaplasma IV (24-28s)',val:20,unid:'mg/kg/dose',via:'IV (60 min)',freq:'1x ao dia x 3 dias'}],
+alertas:['Risco 30x de estenose pilorica com exposicao nos 1os 13 dias de vida','Monitorar QTc'],
+dil:{apres:'500 mg po; Oral 20 mg/mL',alvo:2,diluente:'SF 0,9% ou SG 5%',vol_final:250,unit:'mg',nota:'IV: reconstituir 500 mg em 4,8 mL agua (100 mg/mL); diluir para 1-2 mg/mL; infundir >= 60 min.'},
+ref:'NeoFax Nov. 2024 -- Azithromycin'},
+
+{id:'aztreonam',nome:'Aztreonam',cat:'antibio',indicacao:'Sepse por gram-negativos (E.coli, Klebsiella, Pseudomonas) -- alergia a beta-lactamicos',
+prep:'1 g/2 g po. Diluir para <= 20 mg/mL.',
+doses:[
+{label:'PMA <=29s, 0-28 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA <=29s, > 28 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 30-36s, 0-14 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA >= 45s',val:30,unid:'mg/kg/dose',via:'IV',freq:'6/6h'}],
+alertas:['Contem L-arginina (780 mg/g) -- fornecer glicose (risco de hipoglicemia 1h apos)'],
+dil:{apres:'1 g e 2 g po',alvo:20,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Diluir para <= 20 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Aztreonam'},
+
+{id:'cefazolina',nome:'Cefazolina',cat:'antibio',indicacao:'Profilaxia perioperatoria; ITU e infeccoes de partes moles',
+prep:'500 mg/1 g po. Estavel 24h TA, 10 dias refrigerado.',
+doses:[
+{label:'PMA <=29s, 0-28 dias',val:25,unid:'mg/kg/dose',via:'IV ou IM',freq:'12/12h'},
+{label:'PMA 30-36s, 0-14 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA >= 45s',val:25,unid:'mg/kg/dose',via:'IV',freq:'6/6h'}],
+dil:{apres:'500 mg e 1 g po',alvo:20,diluente:'SF 0,9%',vol_final:25,unit:'mg',nota:'Reconstituir com 2 mL SF (aprox 225 mg/mL); diluir para 20 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- CeFAZolin'},
+
+{id:'cefepime',nome:'Cefepime',cat:'antibio',indicacao:'Gram-negativos resistentes a 3a geracao (Pseudomonas, Enterobacter); meningite',
+prep:'Po para injecao. Diluir para 1-40 mg/mL.',
+doses:[
+{label:'<= 28 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'> 28 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'Meningite ou Pseudomonas',val:50,unid:'mg/kg/dose',via:'IV',freq:'12/12h'}],
+alertas:['Associado a IRA, hipofosfatemia e convulsoes em RNPT','Reservar para infeccoes resistentes confirmadas'],
+dil:{apres:'500 mg e 1 g po',alvo:20,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Diluir para 1-40 mg/mL. Infundir IV em 30 min.'},
+ref:'NeoFax Nov. 2024 -- Cefepime'},
+
+{id:'cefotaxima',nome:'Cefotaxima',cat:'antibio',indicacao:'Sepse neonatal; gonorreia disseminada; meningite por gram-negativos',
+prep:'500 mg/1 g/2 g po. Estavel 24h TA, 7 dias refrigerado.',
+doses:[
+{label:'Sepse -- todas IG, 0-7 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'Sepse -- IG < 32s, >= 7 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'Sepse -- IG >= 32s, >= 7 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'6/6h'},
+{label:'Meningite -- 0-7 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'8/8h (total 100-150 mg/kg/dia)'},
+{label:'Meningite -- >= 8 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'6/6h (total 150-200 mg/kg/dia)'},
+{label:'Gonorreia neonatal',val:25,unid:'mg/kg/dose',via:'IV ou IM',freq:'12/12h x 7 dias'}],
+alertas:['Cefalosporinas 3a geracao no 3o dia em RNEBP (< 1000g): risco de candidose aumentado'],
+dil:{apres:'500 mg, 1 g, 2 g po',alvo:20,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Estavel 24h TA, 7 dias refrigerado. Infundir IV em 20-30 min.'},
+ref:'NeoFax Nov. 2024 -- Cefotaxime'},
+
+{id:'ceftazidima',nome:'Ceftazidima',cat:'antibio',indicacao:'Sepse/meningite por gram-negativos incluindo Pseudomonas',
+prep:'500 mg/1 g po. Contem carbonato de sodio -- CO2 formado. Estavel 12h TA, 3 dias refrigerado.',
+doses:[
+{label:'PMA <=29s, 0-28 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, 0-14 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'Meningite -- 0-28 dias',val:50,unid:'mg/kg/dose',via:'IV',freq:'8/8h a 12/12h'}],
+dil:{apres:'500 mg e 1 g po (contem carbonato)',alvo:20,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Aguardar dissolucao completa do CO2 antes de administrar. Estavel 12h TA.'},
+ref:'NeoFax Nov. 2024 -- CefTAZidime'},
+
+{id:'ceftriaxona',nome:'Ceftriaxona',cat:'antibio',indicacao:'Sepse; meningite; gonorreia/sifilis; Salmonella',
+kids:'KIDs: Usar com cautela em neonatos -- risco de kernicterus (deslocamento de bilirrubina).',
+prep:'250 mg/500 mg/1 g po. Estavel 2 dias TA, 10 dias refrigerado.',
+doses:[
+{label:'Sepse',val:50,unid:'mg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'Meningite -- ataque',val:100,unid:'mg/kg',via:'IV',freq:'dose de ataque'},
+{label:'Meningite -- manutencao',val:80,unid:'mg/kg/dose',via:'IV',freq:'24/24h'}],
+alertas:['NAO administrar com solucoes contendo calcio (precipitacao pulmonar e renal -- obito relatado)','Evitar em ictericia neonatal significativa'],
+dil:{apres:'250 mg, 500 mg, 1 g po',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'NAO misturar com solucoes contendo calcio (precipitacao).'},
+ref:'NeoFax Nov. 2024 -- CefTRIAXone'},
+
+{id:'clindamicina',nome:'Clindamicina',cat:'antibio',indicacao:'Toxoplasmose congenita; infeccoes anaerobias; Staph',
+prep:'IV: 150 mg/mL -- diluir para <= 18 mg/mL. VO: 15 mg/mL.',
+doses:[
+{label:'PMA <=32s',val:5,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 32-40s',val:7,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA <=29s, 0-28 dias',val:5,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37s+, 0-7 dias',val:5,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37s+, > 7 dias',val:5,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'Toxoplasmose',val:'5-7,5',unid:'mg/kg/dose',via:'IV ou VO',freq:'6/6h (max 600 mg/dose)'}],
+alertas:['NAO injetar undiluted','Diarreia e colite por Clostridioides difficile'],
+dil:{apres:'150 mg/mL (amp 2 mL = 300 mg)',alvo:18,diluente:'SF 0,9% ou SG 5%',vol_final:16,unit:'mg',nota:'Diluir para <= 18 mg/mL. Infundir em >= 20-60 min. Nunca IV push undiluted.'},
+ref:'NeoFax Nov. 2024 -- Clindamycin'},
+
+{id:'eritromicina',nome:'Eritromicina',cat:'antibio',indicacao:'Clamydia (pneumonite/conjuntivite); Pertussis; procinentico; profilaxia oftalmia',
+kids:'KIDs: Evitar VO e IV em neonatos (exceto Clamydia trachomatis) -- risco de estenose pilorica.',
+prep:'IV: 500 mg/frasco -- diluir 1-5 mg/mL; infundir >= 60 min. Oral EES suspensao 200 mg/5 mL.',
+doses:[
+{label:'Clamydia',val:12.5,unid:'mg/kg/dose',via:'VO',freq:'6/6h x 14 dias'},
+{label:'Pertussis',val:12.5,unid:'mg/kg/dose',via:'VO',freq:'6/6h x 14 dias'},
+{label:'Procinetico (>= 32s)',val:'40-50',unid:'mg/kg/dia',via:'VO',freq:'dividido em doses'},
+{label:'IV grave',val:'5-10',unid:'mg/kg/dose',via:'IV (60 min)',freq:'6/6h'},
+{label:'Profilaxia oftalmia gonococcica',val:null,unid:'fita 0,5% pomada',via:'Topico ocular',freq:'aplicar em cada saco conjuntival ao nascer'}],
+alertas:['Risco 30x de estenose pilorica (0-13 dias de vida)','Bradicardia grave com IV em neonatos'],
+dil:{apres:'500 mg po; Oral EES 200 mg/5 mL',alvo:5,diluente:'SF 0,9% ou SG 5%',vol_final:100,unit:'mg',nota:'IV: reconstituir 500 mg em 10 mL (50 mg/mL); diluir para 1-5 mg/mL. Infundir em >= 60 min.'},
+ref:'NeoFax Nov. 2024 -- Erythromycin'},
+
+{id:'gentamicina',nome:'Gentamicina',cat:'antibio',indicacao:'Sepse por gram-negativos; combinar com ampicilina empiricamente',
+kids:'KIDs: Evitar pomada oftalmica em neonatos -- risco de reacoes oculares graves.',
+prep:'10 mg/mL solucao pediatrica. Infundir em 30 min.',
+doses:[
+{label:'PMA <=29s*, 0-7 dias',val:5,unid:'mg/kg/dose',via:'IV (30 min)',freq:'48/48h'},
+{label:'PMA <=29s*, 8-28 dias',val:4,unid:'mg/kg/dose',via:'IV',freq:'36/36h'},
+{label:'PMA <=29s*, >= 29 dias',val:4,unid:'mg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'PMA 30-34s, 0-7 dias',val:4.5,unid:'mg/kg/dose',via:'IV',freq:'36/36h'},
+{label:'PMA 30-34s, >= 8 dias',val:4,unid:'mg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'PMA >= 35s',val:4,unid:'mg/kg/dose',via:'IV',freq:'24/24h'}],
+alertas:['Nefrotoxica e ototoxica','Pico alvo (30 min pos-infusao): 6-10 mg/L; vale (antes da dose): < 1-2 mg/L','*ou asfixia, CAP ou tratamento com indometacina'],
+monit:'Concentracoes sericas > 48h. Funcao renal e auditiva.',dil:{apres:'10 mg/mL (amp pediatrica 2 mL = 20 mg)',alvo:2,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir para 1-2 mg/mL. Infundir em 30 min.'},
+ref:'NeoFax Nov. 2024 -- Gentamicin'},
+
+{id:'imipenem',nome:'Imipenem/Cilastatina',cat:'antibio',indicacao:'Infeccoes graves por gram-negativos multirresistentes (exceto meningite)',
+prep:'250/500 mg po. Diluir para <= 5 mg/mL. Estavel 4h TA.',
+doses:[
+{label:'<= 2 kg, <= 1 semana',val:20,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'<= 2 kg, > 1 semana',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'>= 1,5 kg, < 1 semana',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'>= 1,5 kg, 1-4 semanas',val:25,unid:'mg/kg/dose',via:'IV',freq:'8/8h'}],
+alertas:['NAO indicado para meningite neonatal (risco de convulsoes)'],
+dil:{apres:'500 mg po (imipenem + cilastatina)',alvo:5,diluente:'SF 0,9% ou SG 5%',vol_final:100,unit:'mg',nota:'Diluir para <= 5 mg/mL. Estavel 4h TA. Infundir em 20-60 min.'},
+ref:'NeoFax Nov. 2024 -- Imipenem/Cilastatin'},
+
+{id:'linezolida',nome:'Linezolida',cat:'antibio',indicacao:'Gram-positivos resistentes (MRSA, VRE) -- reservar para refratarios',
+prep:'IV: 2 mg/mL premix. VO: 100 mg/5 mL.',
+doses:[
+{label:'RNPT < 1 semana de vida',val:10,unid:'mg/kg/dose',via:'IV ou VO',freq:'12/12h'},
+{label:'RN e lactentes (demais idades)',val:10,unid:'mg/kg/dose',via:'IV ou VO',freq:'8/8h'}],
+alertas:['Mielossupressao -- hemograma semanal','Anemia sideroblastica com uso prolongado'],
+monit:'Hemograma semanal. Lactato em tratamentos prolongados.',dil:{apres:'2 mg/mL premix IV (300 mL = 600 mg); Oral 100 mg/5 mL',alvo:2,diluente:'Premix pronto',vol_final:0,unit:'mg',nota:'IV premix 2 mg/mL: usar diretamente. Infundir em 30-120 min. VO: 100 mg/5 mL.'},
+ref:'NeoFax Nov. 2024 -- Linezolid'},
+
+{id:'meropenem',nome:'Meropenem',cat:'antibio',indicacao:'Infeccoes intra-abdominais graves; sepse por gram-negativos resistentes; meningite',
+prep:'500 mg/1 g po. IV bolus (50 mg/mL): estavel 3h TA. IV infusao SF (1-20 mg/mL): 1h TA, 15h refrigerado.',
+doses:[
+{label:'IG < 32s, < 14 dias',val:20,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'IG < 32s, >= 14 dias',val:20,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'IG >= 32s, < 14 dias',val:20,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'IG >= 32s, >= 14 dias',val:30,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'Meningite',val:40,unid:'mg/kg/dose',via:'IV',freq:'conforme intervalo por IG acima'}],
+alertas:['Reservar para infeccoes resistentes confirmadas'],
+dil:{apres:'500 mg e 1 g po',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Bolus (50 mg/mL): estavel 3h TA. Infusao (1-20 mg/mL): 1h TA, 15h refrigerado.'},
+ref:'NeoFax Nov. 2024 -- Meropenem'},
+
+{id:'metronidazol',nome:'Metronidazol',cat:'antibio',indicacao:'Infeccoes anaerobias; profilaxia cirurgica; NEC',
+prep:'IV: 5 mg/mL premix. Oral: comprimidos 250/500 mg. Nao refrigerar solucao IV.',
+doses:[
+{label:'PMA 24-25s',val:7.5,unid:'mg/kg/dose',via:'IV ou VO',freq:'24/24h'},
+{label:'PMA 26-27s',val:10,unid:'mg/kg/dose',via:'IV ou VO',freq:'24/24h'},
+{label:'PMA 28-33s',val:7.5,unid:'mg/kg/dose',via:'IV ou VO',freq:'12/12h'},
+{label:'PMA 34-40s',val:7.5,unid:'mg/kg/dose',via:'IV ou VO',freq:'8/8h'},
+{label:'PMA > 40s',val:7.5,unid:'mg/kg/dose',via:'IV ou VO',freq:'6/6h'},
+{label:'Dose de ataque (todas as idades)',val:15,unid:'mg/kg',via:'IV',freq:'dose unica'},
+{label:'Profilaxia cirurgica -- < 1,2 kg',val:7.5,unid:'mg/kg',via:'IV',freq:'dose unica 60 min antes da incisao'},
+{label:'Profilaxia cirurgica -- >= 1,2 kg',val:15,unid:'mg/kg',via:'IV',freq:'dose unica 60 min antes da incisao'}],
+dil:{apres:'5 mg/mL premix IV (100 mL = 500 mg)',alvo:5,diluente:'Premix pronto',vol_final:0,unit:'mg',nota:'Premix 5 mg/mL: usar diretamente. Nao refrigerar. Infundir em 30-60 min.'},
+ref:'NeoFax Nov. 2024 -- MetroNIDAZOLE'},
+
+{id:'nafcilina',nome:'Nafcilina',cat:'antibio',indicacao:'Infeccoes por Staph aureus penicillinase-positivo',
+prep:'1/2 g po. Estavel 3 dias TA, 7 dias refrigerado.',
+doses:[
+{label:'PMA <=29s, 0-28 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, 0-14 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA >= 45s',val:25,unid:'mg/kg/dose',via:'IV',freq:'6/6h'},
+{label:'Meningite',val:50,unid:'mg/kg/dose',via:'IV',freq:'conforme PMA acima'}],
+alertas:['Granulocitopenia relatada','Flebite frequente'],
+dil:{apres:'1 g e 2 g po',alvo:25,diluente:'SF 0,9% ou SG 5%',vol_final:40,unit:'mg',nota:'Estavel 3 dias TA, 7 dias refrigerado.'},
+ref:'NeoFax Nov. 2024 -- Nafcillin'},
+
+{id:'oxacilina',nome:'Oxacilina',cat:'antibio',indicacao:'Infeccoes por MSSA (Staph aureus sensivel a meticilina)',
+prep:'Po para injecao. Diluir <= 40 mg/mL. Administrar IV em >= 10 min.',
+doses:[
+{label:'PMA <=29s, 0-28 dias',val:25,unid:'mg/kg/dose',via:'IV (>=10 min)',freq:'12/12h'},
+{label:'PMA 30-36s, 0-14 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:25,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA >= 45s',val:25,unid:'mg/kg/dose',via:'IV',freq:'6/6h'},
+{label:'Meningite',val:50,unid:'mg/kg/dose',via:'IV',freq:'conforme PMA acima'}],
+dil:{apres:'500 mg e 1 g po',alvo:20,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Administrar IV em >= 10 min. Flebite frequente.'},
+ref:'NeoFax Nov. 2024 -- Oxacillin'},
+
+{id:'penicilina_g',nome:'Penicilina G Cristalina (Aquosa)',cat:'antibio',indicacao:'Sifilis congenita; GBS; infeccoes por Streptococcus',
+prep:'SOMENTE penicilina G AQUOSA para IV. Estavel 7 dias refrigerado (potassica).',
+doses:[
+{label:'Sifilis congenita',val:50000,unid:'UI/kg/dose',via:'IV (15-30 min)',freq:'12/12h (< 7 dias) ou 8/8h (>= 7 dias) x 10 dias'},
+{label:'Bacteremia GBS -- <= 7 dias',val:50000,unid:'UI/kg/dose',via:'IV',freq:'12/12h'},
+{label:'Bacteremia GBS -- >= 8 dias',val:50000,unid:'UI/kg/dose',via:'IV',freq:'8/8h'},
+{label:'Meningite GBS -- <= 7 dias',val:150000,unid:'UI/kg/dose',via:'IV',freq:'8/8h'},
+{label:'Meningite GBS -- >= 8 dias',val:125000,unid:'UI/kg/dose',via:'IV',freq:'6/6h'},
+{label:'Bacteremia geral -- PMA <=29s, 0-28d',val:50000,unid:'UI/kg/dose',via:'IV (15 min)',freq:'12/12h'},
+{label:'Meningite geral -- PMA <=29s, 0-28d',val:75000,unid:'UI/kg/dose',via:'IV (30 min)',freq:'12/12h'}],
+alertas:['PCR com infusao rapida em doses altas','Toxicidade do SNC em insuficiencia renal com concentracoes > 10 mcg/mL no LCR','Penicilina G K+: 1,68 mEq/1M UI -- monitorar eletrolitos'],
+dil:{apres:'Potassica: 5 M UI/frasco; Sodica: 5 M UI/frasco',alvo:50000,diluente:'SF 0,9%',vol_final:10,unit:'UI',nota:'Reconstituir com SF para 500.000-1.000.000 UI/mL; diluir para 50.000-100.000 UI/mL. Estavel 7 dias refrigerado.'},
+ref:'NeoFax Nov. 2024 -- Penicillin G'},
+
+{id:'pip_tazo',nome:'Piperacilina/Tazobactam',cat:'antibio',indicacao:'Infeccoes intra-abdominais e por gram-negativos produtores de beta-lactamase',
+prep:'2,25/3,375/4,5 g po. Diluir em SF/SG5%.',
+doses:[
+{label:'PMA <=29s, 0-28 dias',val:100,unid:'mg/kg/dose (pip)',via:'IV',freq:'12/12h'},
+{label:'PMA <=29s, > 28 dias',val:100,unid:'mg/kg/dose (pip)',via:'IV',freq:'8/8h'},
+{label:'PMA 30-36s, 0-14 dias',val:100,unid:'mg/kg/dose (pip)',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:100,unid:'mg/kg/dose (pip)',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:100,unid:'mg/kg/dose (pip)',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:100,unid:'mg/kg/dose (pip)',via:'IV',freq:'8/8h'},
+{label:'PMA >= 45s',val:100,unid:'mg/kg/dose (pip)',via:'IV',freq:'8/8h'}],
+dil:{apres:'Pip/Tazo 2,25 g / 3,375 g / 4,5 g po',alvo:50,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Dose em mg de piperacilina. Infundir em 30 min.'},
+ref:'NeoFax Nov. 2024 -- Piperacillin/Tazobactam'},
+
+{id:'rifampicina',nome:'Rifampicina',cat:'antibio',indicacao:'Estafilococcias persistentes; profilaxia de H. influenzae e N. meningitidis',
+prep:'IV: 600 mg po -- reconstituir 10 mL agua esteril (60 mg/mL); diluir para <= 6 mg/mL.',
+doses:[
+{label:'Estafilococcia -- VO',val:'10-20',unid:'mg/kg/dose',via:'VO',freq:'24/24h'},
+{label:'Estafilococcia -- IV',val:'5-10',unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'Profilaxia H. influenzae',val:10,unid:'mg/kg/dose',via:'VO',freq:'24/24h x 4 dias'},
+{label:'Profilaxia Meningococo',val:5,unid:'mg/kg/dose',via:'VO',freq:'12/12h x 2 dias'}],
+alertas:['Indutor enzimático potente (CYP450) -- reduz niveis de varios farmacos','Coloracao laranja/vermelho de urina, suor e lagrimas (inofensivo)'],
+dil:{apres:'600 mg po',alvo:6,diluente:'SG 5%',vol_final:100,unit:'mg',nota:'Reconstituir 600 mg em 10 mL agua esteril (60 mg/mL); diluir ate <= 6 mg/mL em SG5%. Infundir em 30-180 min.'},
+ref:'NeoFax Nov. 2024 -- RifAMPin'},
+
+{id:'tobramicina',nome:'Tobramicina',cat:'antibio',indicacao:'Infeccoes por gram-negativos (Pseudomonas, Klebsiella, E.coli)',
+prep:'10 mg/mL ou 40 mg/mL. Infundir em 30 min.',
+doses:[
+{label:'PMA <=29s*, 0-7 dias',val:5,unid:'mg/kg/dose',via:'IV (30 min)',freq:'48/48h'},
+{label:'PMA <=29s*, 8-28 dias',val:4,unid:'mg/kg/dose',via:'IV',freq:'36/36h'},
+{label:'PMA <=29s*, >= 29 dias',val:4,unid:'mg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'PMA 30-34s, 0-7 dias',val:4.5,unid:'mg/kg/dose',via:'IV',freq:'36/36h'},
+{label:'PMA 30-34s, >= 8 dias',val:4,unid:'mg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'PMA >= 35s',val:4,unid:'mg/kg/dose',via:'IV',freq:'24/24h'}],
+alertas:['Nefrotoxica e ototoxica','Pico alvo (30 min pos-infusao): 5-12 mg/L; vale < 2 mg/L','*ou asfixia, CAP, uso de indometacina'],
+dil:{apres:'10 mg/mL (amp) ou 40 mg/mL',alvo:2,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir para 1-2 mg/mL. Infundir em 30 min.'},
+ref:'NeoFax Nov. 2024 -- Tobramycin'},
+
+{id:'vancomicina',nome:'Vancomicina',cat:'antibio',indicacao:'Sepse tardia por gram-positivos; MRSA; CONS; enterococo resistente',
+prep:'Diluir para <= 5 mg/mL (periferico). Infundir em MINIMO 60 min.',
+doses:[
+{label:'PMA <=29s, 0-14 dias',val:15,unid:'mg/kg/dose',via:'IV (60+ min)',freq:'18/18h'},
+{label:'PMA <=29s, > 14 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, 0-14 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 30-36s, > 14 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA 37-44s, 0-7 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'PMA 37-44s, > 7 dias',val:15,unid:'mg/kg/dose',via:'IV',freq:'8/8h'},
+{label:'PMA >= 45s',val:15,unid:'mg/kg/dose',via:'IV',freq:'6/6h'},
+{label:'MRSA grave (ajustar por AUC/MIC)',val:'10-20',unid:'mg/kg/dose',via:'IV',freq:'6-48h (conforme PMA, peso e CrS)'}],
+alertas:['Red Man Syndrome com infusao rapida (< 60 min)','Vale alvo: 10-20 mg/L; AUC/MIC alvo: > 400'],
+monit:'Concentracoes sericas (vale antes da 4a dose). Funcao renal.',dil:{apres:'500 mg e 1 g po',alvo:5,diluente:'SF 0,9% ou SG 5%',vol_final:100,unit:'mg',nota:'Diluir para <= 5 mg/mL (periferico). Infundir em >= 60 min. Nunca IV push.'},
+ref:'NeoFax Nov. 2024 -- Vancomycin'},
+
+{id:'aciclovir',nome:'Aciclovir',cat:'antibio',indicacao:'Herpes simplex neonatal (HSV); varicela-zoster com SNC/pulmonar',
+prep:'Concentracao IV <= 7 mg/mL em SG5% ou SF. Estavel 12h TA. Nao refrigerar (precipita).',
+doses:[
+{label:'HSV FDA -- PMA < 34s',val:20,unid:'mg/kg/dose',via:'IV (1h)',freq:'12/12h x 21 dias'},
+{label:'HSV FDA -- PMA >= 34s',val:20,unid:'mg/kg/dose',via:'IV (1h)',freq:'8/8h x 21 dias'},
+{label:'HSV -- supressao oral',val:300,unid:'mg/m2/dose',via:'VO',freq:'3x ao dia x 6 meses (basear em SC)',obs:'Dose por SC'},
+{label:'VZV',val:'10-15',unid:'mg/kg/dose',via:'IV (1h)',freq:'8/8h x 5-10 dias'}],
+alertas:['Nefrotoxica com infusao rapida -- infundir em 1h','Hidratacao adequada','Trombocitopenia e leucopenia frequentes'],
+monit:'Funcao renal semanalmente. Hemograma.',dil:{apres:'500 mg po; Oral 200 mg/5 mL',alvo:7,diluente:'SG 5% ou SF 0,9%',vol_final:71,unit:'mg',nota:'Concentracao max 7 mg/mL. Infundir em 1h. Nao refrigerar (precipita). Para supressao oral: aspirar dose(mg)/40 mL da sol 200 mg/5 mL.'},
+ref:'NeoFax Nov. 2024 -- Acyclovir'},
+
+{id:'ganciclovir',nome:'Ganciclovir',cat:'antibio',indicacao:'CMV congenito sintomatic com envolvimento de SNC',
+prep:'Po 500 mg. Diluir <= 10 mg/mL em SF ou SG5%. Infundir em 1h. Precaucoes de citostático.',
+doses:[
+{label:'IV',val:6,unid:'mg/kg/dose',via:'IV (1h)',freq:'12/12h x min 6 semanas'},
+{label:'Oral (supressao)',val:'30-40',unid:'mg/kg/dose',via:'VO',freq:'8/8h'}],
+alertas:['Neutropenia grave na maioria dos pacientes','Potencialmente carcinogenico -- precaucoes de manipulacao'],
+monit:'Hemograma a cada 2-3 dias nas 1as 3 semanas; depois semanal.',dil:{apres:'500 mg po',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'Diluir para <= 10 mg/mL. Infundir em 1h. Precaucoes de citotoxicos.'},
+ref:'NeoFax Nov. 2024 -- Ganciclovir'},
+
+{id:'valganciclovir',nome:'ValGANciclovir',cat:'antibio',indicacao:'CMV congenito sintomatic -- equivalente oral ao ganciclovir IV',
+prep:'Valcyte 50 mg/mL solucao oral reconstituida. Refrigerado; estavel 49 dias. Precaucoes de citostático.',
+doses:[
+{label:'Oral',val:16,unid:'mg/kg/dose',via:'VO (com alimento)',freq:'12/12h x min 6 semanas'}],
+alertas:['Mesmos riscos que ganciclovir: neutropenia, carcinogenicidade','Usar somente Valcyte farmaceutico'],
+monit:'Hemograma e funcao renal regularmente.',dil:{apres:'Solucao oral 50 mg/mL (reconstituida)',alvo:50,diluente:'Oral - sem diluicao adicional',vol_final:0,unit:'mg',nota:'VO: Valcyte 50 mg/mL. Volume = dose(mg)/50 mL. Refrigerado 49 dias.'},
+ref:'NeoFax Nov. 2024 -- ValGANciclovir'},
+
+{id:'fluconazol',nome:'Fluconazol',cat:'antifung',indicacao:'Candidíase invasiva; candidemia; profilaxia em RNPT < 1000g',
+prep:'IV: 2 mg/mL premix. Oral: 10 mg/mL e 40 mg/mL suspensao.',
+doses:[
+{label:'Tratamento -- IG <=29s, 0-14 dias',val:12,unid:'mg/kg/dose',via:'IV ou VO',freq:'48/48h'},
+{label:'Tratamento -- IG <=29s, > 14 dias',val:12,unid:'mg/kg/dose',via:'IV ou VO',freq:'24/24h'},
+{label:'Tratamento -- IG >=30s, 0-7 dias',val:12,unid:'mg/kg/dose',via:'IV ou VO',freq:'48/48h'},
+{label:'Tratamento -- IG >=30s, > 7 dias',val:12,unid:'mg/kg/dose',via:'IV ou VO',freq:'24/24h'},
+{label:'Profilaxia RNPT < 1000g',val:'3-6',unid:'mg/kg/dose',via:'IV',freq:'2x por semana x 6 semanas'}],
+alertas:['Insuficiencia renal: prolongar intervalo (CrS > 1,3 mg/dL)'],
+monit:'Culturas sanguineas ate erradicacao. Enzimas hepaticas.',dil:{apres:'2 mg/mL premix IV (200 mg/100 mL); Oral 10 mg/mL',alvo:2,diluente:'Premix pronto',vol_final:0,unit:'mg',nota:'IV premix 2 mg/mL: usar diretamente. Volume = dose(mg)/2 mL. Oral: 10 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Fluconazole'},
+
+{id:'anfotericina_b',nome:'Anfotericina B Desoxicolato',cat:'antifung',indicacao:'Candidíase invasiva e CNS (1a escolha neonatal)',
+prep:'50 mg/frasco. Diluir para <= 0,1 mg/mL em SG5%. NAO misturar com SF -- precipitacao.',
+doses:[{label:'Dose',val:1,unid:'mg/kg/dose',via:'IV (2-6h)',freq:'24/24h'}],
+alertas:['Nefrotoxica -- monitorar CrS frequentemente','Hipocalemia e hipomagnesemia frequentes'],
+monit:'Funcao renal frequente. K+ e Mg2+. Culturas diarias ou em dias alternados.',dil:{apres:'50 mg/frasco liofilizado',alvo:0.1,diluente:'SG 5% exclusivamente',vol_final:500,unit:'mg',nota:'Reconstituir com 10 mL agua esteril (5 mg/mL); diluir em SG5% para 0,1 mg/mL. NAO usar SF (precipitacao).'},
+ref:'NeoFax Nov. 2024 -- Amphotericin B'},
+
+{id:'micafungina',nome:'Micafungina',cat:'antifung',indicacao:'Candidíase invasiva -- alternativa quando intolerancia/resistencia',
+prep:'50/100 mg po. Diluir para 0,5-1,5 mg/mL. Proteger da luz.',
+doses:[
+{label:'Candidíase invasiva',val:4,unid:'mg/kg/dose',via:'IV',freq:'24/24h'},
+{label:'Candidíase/HIV -- neonatos',val:'10-12',unid:'mg/kg/dose',via:'IV',freq:'24/24h'}],
+alertas:['Echinocandinas: reservar para salvage ou resistencia em neonatos','Hepatotoxicidade -- monitorar enzimas'],
+dil:{apres:'50 mg e 100 mg po',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:100,unit:'mg',nota:'Diluir para 0,5-1,5 mg/mL. Proteger da luz. Infundir em 1h.'},
+ref:'NeoFax Nov. 2024 -- Micafungin'},
+
+{id:'nistatina',nome:'Nistatina',cat:'antifung',indicacao:'Candidíase oral; profilaxia fúngica em RNPT < 1500g',
+prep:'Suspensao oral 100.000 UI/mL.',
+doses:[
+{label:'Candidíase oral -- lactentes',val:200000,unid:'UI',via:'VO 4x/dia',freq:'dividir em 2 aplicacoes por lado da boca'},
+{label:'Candidíase oral -- RNPT e BPN',val:100000,unid:'UI',via:'VO 4x/dia',freq:'dividir por lado da boca'},
+{label:'Profilaxia -- RNPT < 1500g',val:100000,unid:'UI',via:'VO 3x/dia',freq:'x 6 semanas'}],
+dil:{apres:'Suspensao oral 100.000 UI/mL',alvo:100000,diluente:'Oral - sem diluicao',vol_final:0,unit:'UI',nota:'Oral: 100.000 UI/mL. Volume = dose(UI)/100000 mL. Aplicar na mucosa bucal.'},
+ref:'NeoFax Nov. 2024 -- Nystatin'},
+
+{id:'fentanil',nome:'Fentanil',cat:'analg',indicacao:'Analgesia peri-operatoria; dor moderada-grave; sedacao em VM',
+prep:'50 mcg/mL ampolas. Diluir para 10 mcg/mL.',
+doses:[
+{label:'Analgesia -- bolus',val:'0,5-3',unid:'mcg/kg/dose',via:'IV lento (15-30 min)',freq:'a cada 2-4h PRN'},
+{label:'Analgesia -- infusao',val:'0,5-2',unid:'mcg/kg/h',via:'IV continuo',freq:'infusao'},
+{label:'Anestesia',val:'5-50',unid:'mcg/kg',via:'IV',freq:'dose unica'},
+{label:'Sedacao -- bolus',val:'0,5-4',unid:'mcg/kg/dose',via:'IV',freq:'a cada 2-4h'},
+{label:'Sedacao -- infusao',val:'1-5',unid:'mcg/kg/h',via:'IV continuo',freq:'infusao'}],
+alertas:['Rigidez toracica com bolus rapido (4%) -- reverter com naloxona','Ter naloxona disponivel','Tolerancia com infusao prolongada'],
+monit:'Status respiratorio e cardiovascular.',dil:{apres:'50 mcg/mL (amp 2 mL = 100 mcg / amp 10 mL = 500 mcg)',alvo:10,diluente:'SF 0,9%',vol_final:50,unit:'mcg',infusao_continua:true,nota:'Bolus: usar 50 mcg/mL diluido. Infusao: diluir para 10 mcg/mL.'},
+ref:'NeoFax Nov. 2024 -- FentaNYL'},
+
+{id:'morfina',nome:'Morfina',cat:'analg',indicacao:'Analgesia pos-operatoria; dor moderada-grave; SAN',
+prep:'Injetavel 0,5-50 mg/mL. VO: 2/4/20 mg/mL solucao.',
+doses:[
+{label:'Analgesia -- bolus IV',val:'0,05-0,2',unid:'mg/kg/dose',via:'IV',freq:'a cada 4h PRN'},
+{label:'Analgesia -- infusao IV (ataque)',val:0.1,unid:'mg/kg',via:'IV',freq:'dose de ataque'},
+{label:'Analgesia -- infusao IV continua',val:'0,01-0,02',unid:'mg/kg/h',via:'IV continuo',freq:'infusao'},
+{label:'SAN -- VO inicial',val:'0,03-0,1',unid:'mg/kg/dose',via:'VO',freq:'3-4/3-4h (max 0,2 mg/kg/dose)'}],
+alertas:['Depressao respiratoria -- ter naloxona disponivel','Hipotensao e bradicardia','Evitar em RNPT < 28s'],
+monit:'Status respiratorio e cardiovascular continuos.',dil:{apres:'1 mg/mL e 10 mg/mL injetavel; Oral 2 mg/mL',alvo:0.5,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',infusao_continua:true,nota:'Bolus: diluir para 0,5-1 mg/mL. Infusao: 0,1-1 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Morphine'},
+
+{id:'naloxona',nome:'Naloxona',cat:'analg',indicacao:'Reversao de depressao respiratoria por opioide',
+kids:'KIDs: Evitar em RN para ressuscitacao pos-parto -- risco de convulsoes.',
+prep:'0,4 mg/mL ou 1 mg/mL. NAO misturar em solucao alcalina.',
+doses:[
+{label:'Depressao respiratoria terapeutica',val:'0,001-0,005',unid:'mg/kg',via:'IV',freq:'titular conforme efeito'},
+{label:'Reversao total (PALS)',val:0.1,unid:'mg/kg',via:'IV/IO',freq:'repetir a cada 2-3 min'},
+{label:'Nota RCP neonatal',val:null,unid:'NAO recomendado como parte da reanimacao inicial',via:'Restaurar FC e cor com ventilacao antes da naloxona',freq:'--'}],
+alertas:['Reversao abrupta: convulsoes, HAS, TV, edema pulmonar','Duracao mais curta que a maioria dos opioides -- risco de ressedacao'],
+monit:'Retorno da sedacao e depressao respiratoria.',dil:{apres:'0,4 mg/mL e 1 mg/mL',alvo:0.04,diluente:'SF 0,9%',vol_final:10,unit:'mg',nota:'Para doses neonatais (0,001-0,1 mg/kg): diluir 0,4 mg/mL para 0,04 mg/mL (1 mL + 9 mL SF).'},
+ref:'NeoFax Nov. 2024 -- Naloxone'},
+
+{id:'buprenorfina',nome:'Buprenorfina (SL)',cat:'analg',indicacao:'Síndrome de Abstinência Neonatal (SAN)',
+prep:'Solucao SL 0,075 mg/mL (extemporanea). Armazenar em frasco ambar.',
+doses:[{label:'Dose inicial SL',val:15.9,unid:'mcg/kg/dia',via:'Sublingual (3 doses iguais/dia)',freq:'titular 25% conforme escore; max 60 mcg/kg/dia'}],
+alertas:['Evidencia crescente de vantagem sobre morfina (menor tempo de tratamento)'],
+dil:{apres:'Sol SL 0,075 mg/mL (extemporanea)',alvo:0.075,diluente:'Sublingual',vol_final:0,unit:'mg',nota:'SL 0,075 mg/mL: volume = dose(mg)/0,075 mL. Preparacao extemporanea - frasco ambar.'},
+ref:'NeoFax Nov. 2024 -- Buprenorphine'},
+
+{id:'metadona_san',nome:'Metadona (SAN)',cat:'analg',indicacao:'Síndrome de Abstinência Neonatal (SAN)',
+prep:'Solucao oral 1 mg/mL e 2 mg/mL.',
+doses:[
+{label:'Inicial VO (IG >= 34s)',val:0.1,unid:'mg/kg/dose',via:'VO',freq:'6/6h (ajustar pelo escore Finnegan)'},
+{label:'Prot. desmame -- Passo 1',val:null,unid:'0,1 mg/kg/dose 6/6h x 4 doses',via:'VO',freq:'ver protcolo'}],
+alertas:['QTc prolongado -- ECG se bradicardia/taquicardia','Metadona tem meia-vida longa -- cuidado com acumulo'],
+monit:'ECG. Escore Finnegan 3-4/3-4h.',dil:{apres:'Sol oral 1 mg/mL ou 2 mg/mL',alvo:1,diluente:'Oral',vol_final:0,unit:'mg',nota:'VO: sol 1 mg/mL -> volume = dose(mg) em mL.'},
+ref:'NeoFax Nov. 2024 -- Methadone'},
+
+{id:'fenobarbital',nome:'Fenobarbital',cat:'neuro',indicacao:'Convulsoes neonatais (1a linha); SAN (adjunto)',
+prep:'100 mg/mL injetavel. pH ~10 -- irritante venoso.',
+doses:[
+{label:'Ataque anticonvulsivante IV',val:20,unid:'mg/kg',via:'IV lento',freq:'dose unica (max 40 mg/kg total)'},
+{label:'2a dose se convulsao persiste',val:10,unid:'mg/kg',via:'IV',freq:'20-30 min -- ate max 40 mg/kg total'},
+{label:'Manutencao -- guideline',val:'3-5',unid:'mg/kg/dia',via:'IV ou VO',freq:'1-2 doses/dia (12h apos ataque)'},
+{label:'Manut FDA (preserv-free)',val:1.5,unid:'mg/kg/dose',via:'IV',freq:'8/8h (max 4,5 mg/kg/dia x 5 dias)'},
+{label:'SAN -- ataque VO',val:16,unid:'mg/kg',via:'VO',freq:'dia 1'},
+{label:'SAN -- manutencao VO',val:'1-4',unid:'mg/kg/dose',via:'VO',freq:'12/12h (desmame 20%/dia alternado)'}],
+alertas:['Depressao respiratoria -- monitorar','Hipotensao com administracao rapida','Nivel terapeutico: 15-40 mcg/mL'],
+monit:'Nivel serico (trough alvo 15-40 mcg/mL). Status respiratorio e PA.',dil:{apres:'100 mg/mL injetavel (amp 1 mL = 100 mg)',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir para <= 10 mg/mL. Infundir lentamente (max 2 mg/kg/min).'},
+ref:'NeoFax Nov. 2024 -- PHENobarbital'},
+
+{id:'fenitoina',nome:'Fentoina',cat:'neuro',indicacao:'Convulsoes refratarias ao fenobarbital (2a linha)',
+prep:'50 mg/mL IV (pH 12). SOMENTE SF -- precipita em SG5%. Diluir >= 5 mg/mL. Infundir em veia GRANDE.',
+doses:[
+{label:'Ataque IV',val:'15-20',unid:'mg/kg',via:'IV lento',freq:'infundir a 1-3 mg/kg/min (max 50 mg/min)'},
+{label:'Manutencao IV',val:'4-8',unid:'mg/kg/dia',via:'IV push lento ou VO',freq:'24/24h; dividir 8-12/8-12h apos 1 semana'}],
+alertas:['Bradicardia e hipotensao grave com infusao rapida -- ECG continuo','Extravasamento causa necrose grave (pH 12)','VIA IM NAO aceitavel','NAO diluir em SG5%','Nivel terapeutico: 6-15 mcg/mL (primeiras semanas)'],
+monit:'ECG e PA durante infusao. Nivel serico trough 48h apos ataque.',dil:{apres:'50 mg/mL (amp 5 mL = 250 mg)',alvo:5,diluente:'SF 0,9% EXCLUSIVAMENTE',vol_final:50,unit:'mg',nota:'NAO diluir em SG5% (precipitacao). Max 5 mg/mL. Infundir em veia GRANDE a 1-3 mg/kg/min.'},
+ref:'NeoFax Nov. 2024 -- Phenytoin'},
+
+{id:'fosfenitoina',nome:'Fosfenitoina (PE)',cat:'neuro',indicacao:'Convulsoes -- substituto IV/IM da fenitoina',
+prep:'50 mg PE/mL. Diluir em SF ou SG5% para 1,5-25 mg PE/mL.',
+doses:[
+{label:'Status epilepticus -- ataque',val:'15-20',unid:'mg PE/kg',via:'IV',freq:'max 2 mg PE/kg/min'},
+{label:'Manutencao',val:'2-4',unid:'mg PE/kg/dose',via:'IV',freq:'12/12h'}],
+alertas:['Menos reacoes venosas que fenitoina','Monitorar PA e ECG durante ataque'],
+monit:'ECG e PA. Nivel serico de fenitoina (2h pos-IV).',dil:{apres:'75 mg PE/mL (= 50 mg fenitoina/mL)',alvo:20,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg_PE',nota:'Dose em mg PE (equivalente fenitoina). Diluir para 1,5-25 mg PE/mL.'},
+ref:'NeoFax Nov. 2024 -- Fosphenytoin'},
+
+{id:'cafeina',nome:'Citrato de Cafeina',cat:'neuro',indicacao:'Apneia da prematuridade; facilitacao de extubacao; prevencao de DBP',
+prep:'20 mg/mL citrato de cafeina = 10 mg/mL cafeina base. Ampolas 3 mL. ATENCAO: citrato ≠ base (razao 2:1).',
+doses:[
+{label:'Ataque (FDA: 28-33s)',val:20,unid:'mg/kg (citrato)',via:'IV (30 min) ou VO',freq:'dose unica',obs:'= 10 mg/kg de cafeina BASE'},
+{label:'Manutencao (FDA: 28-33s)',val:5,unid:'mg/kg/dia (citrato)',via:'IV ou VO',freq:'24/24h (24h apos ataque)',obs:'= 2,5 mg/kg/dia cafeina base'},
+{label:'Off-label: 22-28s -- ataque',val:20,unid:'mg/kg (citrato)',via:'IV',freq:'dose unica'},
+{label:'Off-label: 22-28s -- manutencao',val:8,unid:'mg/kg/dia (citrato)',via:'IV ou VO',freq:'24/24h'}],
+alertas:['ATENCAO: Citrato de cafeina ≠ Cafeina base (razao 2:1)','Nivel terapeutico trough: 8-40 mcg/mL','Taquicardia, irritabilidade e intolerancia alimentar podem indicar toxicidade'],
+monit:'FC. Nivel serico se disfuncao hepatica ou renal.',dil:{apres:'20 mg/mL citrato (= 10 mg/mL base) amp 3 mL = 60 mg citrato',alvo:20,diluente:'SF 0,9% ou SG 5% ou EV Neonatal',vol_final:3,unit:'mg',nota:'Pode usar undiluted (20 mg/mL citrato) em bolus lento ou diluir. Dose em mg de CITRATO.'},
+ref:'NeoFax Nov. 2024 -- Caffeine Citrate'},
+
+{id:'levetiracetam',nome:'Levetiracetam',cat:'neuro',indicacao:'Convulsoes neonatais (2a ou 3a linha apos fenobarbital)',
+prep:'IV: 100 mg/mL (Keppra) -- diluir para <= 15 mg/mL. VO: 100 mg/mL.',
+doses:[
+{label:'Ataque',val:40,unid:'mg/kg',via:'IV (15 min)',freq:'dose unica (pode repetir 20 mg/kg)'},
+{label:'Manutencao',val:'20-30',unid:'mg/kg/dia',via:'IV ou VO',freq:'12/12h'}],
+alertas:['Fenobarbital continua como 1a linha -- LEV inferior em ensaio prospectivo (28% vs 80%)','Reacao anafilatica relatada -- ter epinefrina disponivel'],
+dil:{apres:'100 mg/mL (Keppra) concentrado',alvo:15,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir para <= 15 mg/mL. Infundir em 15 min.'},
+ref:'NeoFax Nov. 2024 -- LevETIRAcetam'},
+
+{id:'lidocaina_cns',nome:'Lidocaína IV -- Anticonvulsivante',cat:'neuro',indicacao:'Convulsoes graves refratarias a 1as linhas',
+prep:'SOMENTE lidocaina SEM epinefrina e SEM conservantes. Varias concentracoes (1-20%).',
+doses:[
+{label:'Ataque -- RN a termo normotermico',val:2,unid:'mg/kg',via:'IV (10 min)',freq:'seguido imediatamente por manutencao'},
+{label:'Manutencao -- 0-6h',val:6,unid:'mg/kg/h',via:'IV continuo',freq:'por 6h'},
+{label:'Manutencao -- 6-18h',val:4,unid:'mg/kg/h',via:'IV continuo',freq:'por 12h'},
+{label:'Manutencao -- 18-30h',val:2,unid:'mg/kg/h',via:'IV continuo',freq:'por 12h'}],
+alertas:['RNPT e RN sob hipotermia: clearance reduzido -- risco de acumulo','NAO usar concomitante com fenitoina (efeitos cardiacos aditivos)','Bradicardia e bloqueio AV em 1-2% (parar imediatamente)'],
+monit:'ECG continuo. FC e PA. Status neurologico.',dil:{apres:'Multiplas: 10 mg/mL (1%), 20 mg/mL (2%) SEM epinefrina',alvo:2,diluente:'SF 0,9%',vol_final:10,unit:'mg',infusao_continua:true,nota:'Usar APENAS sem epinefrina e sem conservantes. Diluir para 2 mg/mL para infusao.'},
+ref:'NeoFax Nov. 2024 -- Lidocaine - CNS'},
+
+{id:'midazolam',nome:'Midazolam',cat:'sedac',indicacao:'Sedacao procedural; convulsoes refratarias (2a linha)',
+kids:'KIDs: Evitar em RNPT de muito baixo peso -- risco grave de HIV, leucomalacia periventricular e obito.',
+prep:'1 mg/mL (preservativo-free) ou 5 mg/mL. Diluir IV para 0,5 mg/mL.',
+doses:[
+{label:'Sedacao -- bolus IV',val:'0,05-0,15',unid:'mg/kg',via:'IV lento (10 min)',freq:'PRN a cada 2-4h'},
+{label:'Sedacao -- infusao IV',val:'0,01-0,06',unid:'mg/kg/h',via:'IV continuo',freq:'infusao'},
+{label:'Intranasal',val:'0,2-0,3',unid:'mg/kg/dose',via:'Intranasal (5 mg/mL)',freq:'dose unica'},
+{label:'Anticonvulsivante -- ataque',val:0.15,unid:'mg/kg',via:'IV',freq:'seguido de manutencao'},
+{label:'Anticonvulsivante -- manutencao',val:'0,06-0,4',unid:'mg/kg/h',via:'IV continuo',freq:'1-7 mcg/kg/min'}],
+alertas:['Depressao respiratoria e hipotensao -- uso com opioides amplifica riscos','Mioclonia em 8% de RNPT com infusao continua','Abstinencia com descontinuacao abrupta apos > 5 dias'],
+monit:'Status respiratorio e PA. Sinais de abstinencia.',dil:{apres:'1 mg/mL (preservativo-free) ou 5 mg/mL',alvo:0.5,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',infusao_continua:true,nota:'Bolus: diluir para 0,5 mg/mL. Infusao: 0,1-0,5 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Midazolam'},
+
+{id:'lorazepam',nome:'Lorazepam',cat:'sedac',indicacao:'Convulsoes agudas refratarias',
+prep:'2 mg/mL ou 4 mg/mL. Diluir com volume igual de diluente compativel.',
+doses:[{label:'Anticonvulsivante IV',val:'0,05-0,1',unid:'mg/kg/dose',via:'IV lento',freq:'repetir conforme resposta'}],
+alertas:['Depressao respiratoria -- monitorar','Mioclonia em RNPT'],
+monit:'Status respiratorio continuo.',dil:{apres:'2 mg/mL ou 4 mg/mL',alvo:0.4,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir com volume igual de diluente (1:1). Infundir lentamente.'},
+ref:'NeoFax Nov. 2024 -- LORazepam'},
+
+{id:'clonidina',nome:'Clonidina',cat:'sedac',indicacao:'SAN (adjunto); sedacao adjuvante em VM',
+prep:'Oral: comprimidos 0,1-0,3 mg; solucao extemporanea 0,01 mg/mL.',
+doses:[
+{label:'SAN -- IG >= 35s (inicial)',val:'0,5-1',unid:'mcg/kg/dose',via:'VO',freq:'4/4h a 6/6h'},
+{label:'SAN -- manutencao',val:'0,5-1,25',unid:'mcg/kg/dose',via:'VO',freq:'4/4h a 6/6h'}],
+alertas:['Monitorar FC e PA a cada 4h nos primeiros 2 dias','Rebound hipertensao na descontinuacao abrupta -- desmame gradual'],
+monit:'FC e PA frequentes. Escore de abstinencia.',dil:{apres:'Comp 0,1-0,3 mg; Sol extemporanea 0,01 mg/mL (10 mcg/mL)',alvo:0.01,diluente:'Oral',vol_final:0,unit:'mg',nota:'VO: sol 0,01 mg/mL (10 mcg/mL) -> volume = dose(mg)/0,01 mL.'},
+ref:'NeoFax Nov. 2024 -- CloNIDine'},
+
+{id:'pentobarbital',nome:'Pentobarbital',cat:'sedac',indicacao:'Sedativo/hipnotico; uso de curto prazo',
+prep:'50 mg/mL (propileno glicol 40%, alcool 10%). pH 9,5 -- irritante venoso.',
+doses:[{label:'Sedacao IV',val:'2-6',unid:'mg/kg',via:'IV (30s-2 min)',freq:'dose unica PRN'}],
+alertas:['Depressao respiratoria e cardiovascular'],
+monit:'Status respiratorio e PA.',dil:{apres:'50 mg/mL (contém propileno glicol)',alvo:5,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir para <= 5 mg/mL. Administrar em 30s-2 min.'},
+ref:'NeoFax Nov. 2024 -- PENTobarbital'},
+
+{id:'surfactante_por',nome:'Poractant Alfa (Curosurf)',cat:'resp',indicacao:'SDR -- tratamento e profilaxia; tecnica LISA/INSURE',
+prep:'1,5 mL (120 mg) e 3 mL (240 mg). Refrigerado. Aquecer a temperatura corporal antes. Girar suavemente -- NAO agitar.',
+doses:[
+{label:'Tratamento -- 1a dose',val:2.5,unid:'mL/kg (200 mg/kg)',via:'Intratraqueal',freq:'dose unica'},
+{label:'Doses subsequentes (ate 2)',val:1.25,unid:'mL/kg (100 mg/kg)',via:'Intratraqueal',freq:'>= 12h (max total 400 mg/kg)'}],
+alertas:['Bradicardia, hipotensao e obstrucao do ETT sao transitorios'],
+monit:'SpO2, FiO2, gasometria apos administracao.',dil:{apres:'Curosurf 80 mg/mL: frasco 1,5 mL (120 mg) e 3 mL (240 mg)',alvo:80,diluente:'Sem diluicao',vol_final:0,unit:'mg',nota:'Nao diluir. Aquecer a temperatura corporal. Girar suavemente. Dose em mL/kg diretamente.'},
+ref:'NeoFax Nov. 2024 -- Poractant alfa'},
+
+{id:'beractant',nome:'Beractant (Survanta)',cat:'resp',indicacao:'SDR -- tratamento e profilaxia em RNPT',
+prep:'4 mL/8 mL (25 mg fosfolipideos/mL). Refrigerado; girar suavemente.',
+doses:[{label:'1a dose',val:4,unid:'mL/kg (100 mg fosfolipideos/kg)',via:'Intratraqueal em 4 aliquotas',freq:'ate 4 doses nas 1as 48h; nao mais frequente que 6/6h'}],
+alertas:['Administrar em 4 aliquotas com reposicionamento entre cada uma'],
+dil:{apres:'Survanta 25 mg/mL: frasco 4 mL (100 mg) e 8 mL (200 mg)',alvo:25,diluente:'Sem diluicao',vol_final:0,unit:'mg',nota:'Nao diluir. Girar suavemente. Dose = 4 mL/kg = 100 mg/kg. Dividir em 4 aliquotas.'},
+ref:'NeoFax Nov. 2024 -- Beractant'},
+
+{id:'dexametasona_resp',nome:'Dexametasona -- DBP',cat:'resp',indicacao:'DBP grave (facilitacao de extubacao); edema subglotico',
+prep:'4 mg/mL injetavel. VO: solucao 0,1 mg/mL.',
+doses:[
+{label:'DBP -- protocolo DART',val:0.075,unid:'mg/kg/dose',via:'IV ou VO',freq:'12/12h x 3 dias -> reduzir progressivamente em 10 dias'},
+{label:'Edema subglotico',val:0.25,unid:'mg/kg/dose',via:'IV',freq:'6/6h (max 3 doses)'}],
+alertas:['Uso rotineiro NAO recomendado pela AAP','Risco de paralisia cerebral com doses altas ou precoces (< 7 dias)','Hiperglicemia, HAS, perfuracao intestinal','NAO usar com indometacina (perfuracao GI)'],
+monit:'Glicemia, PA, guaiaco de aspirado gastrico.',dil:{apres:'4 mg/mL injetavel; Sol oral 0,1 mg/mL',alvo:0.4,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'IV: diluir para 0,4 mg/mL (diluicao 1:10). VO: sol 0,1 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Dexamethasone'},
+
+{id:'oxido_nitrico',nome:'Oxido Nitrico Inalatorio (iNO)',cat:'resp',indicacao:'Insuficiencia respiratoria hipoxica com HP em RN > 34 semanas',
+prep:'INOmax/Genosyl 800 ppm em cilindros. Administrado via sistema de entrega proprio.',
+doses:[{label:'RN > 34 semanas',val:20,unid:'ppm',via:'Inalatorio continuo',freq:'max recomendado: 20 ppm'}],
+alertas:['NAO recomendado para RNPT < 34s para prevencao de DBP','Nao suspender abruptamente (efeito rebote)','Metemoglobinemia -- monitorar'],
+monit:'MetaHb 4-8h apos inicio. PaO2.',dil:{apres:'Cilindros INOmax/Genosyl 800 ppm',alvo:800,diluente:'Inalatorio via sistema proprio',vol_final:0,unit:'ppm',nota:'Administrar via sistema de entrega INOmax ou equivalente. Dose alvo: 20 ppm.'},
+ref:'NeoFax Nov. 2024 -- Nitric Oxide'},
+
+{id:'aminofilina',nome:'Aminofilina',cat:'resp',indicacao:'Apneia da prematuridade (2a linha -- preferir cafeina); broncodilatador',
+prep:'25 mg/mL IV. Diluir 1 mL em 4 mL SF/SG5% = 5 mg/mL. Infundir em 30-60 min.',
+doses:[
+{label:'Ataque IV',val:8,unid:'mg/kg',via:'IV (30-60 min)',freq:'dose unica'},
+{label:'Manutencao IV ou VO',val:'1,5-3',unid:'mg/kg/dose',via:'IV ou VO',freq:'8/8h a 12/12h (iniciar 8-12h apos ataque)'}],
+alertas:['Cafeina e o padrao atual para apneia','Taquicardia, intolerancia alimentar, hiperglicemia com toxicidade','Suspender se FC > 180 bpm'],
+monit:'FC e glicemia. Nivel serico trough se indicado.',dil:{apres:'25 mg/mL (amp 10 mL = 250 mg)',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:250,unit:'mg',nota:'Diluir 1 mL (25 mg) em 24 mL -> 1 mg/mL. Ou 1 mL em 4 mL -> 5 mg/mL. Infundir em 30-60 min.'},
+ref:'NeoFax Nov. 2024 -- Aminophylline'},
+
+{id:'albuterol',nome:'Albuterol (Salbutamol)',cat:'resp',indicacao:'Broncodilatacao; hipercalemia em RNPT',
+prep:'Solucao 0,5% (5 mg/mL) -- diluir em SF para 3 mL total. MDI 100 mcg/puff.',
+doses:[
+{label:'Broncodilatacao -- nebulizacao',val:'0,1-0,5',unid:'mg/kg/dose',via:'Nebulizacao',freq:'2/2h a 6/6h'},
+{label:'Hipercalemia RNPT',val:0.4,unid:'mg/dose',via:'Nebulizacao',freq:'2/2h ate K+ < 5 mmol/L'},
+{label:'Hipercalemia (AAP)',val:2.5,unid:'mg/dose',via:'Nebulizacao',freq:'20 min x 1-2 doses'}],
+alertas:['Taquicardia -- nao administrar se FC > 180 bpm','Usar solucoes preservativo-free'],
+monit:'FC, K+ serico.',dil:{apres:'Sol nebulizacao 0,5% (5 mg/mL)',alvo:5,diluente:'SF 0,9% para completar 3 mL',vol_final:3,unit:'mg',nota:'Nebulizacao: dose(mg)/5 mL + SF ate completar 3 mL total.'},
+ref:'NeoFax Nov. 2024 -- Albuterol'},
+
+{id:'ipratropio',nome:'Ipratropia',cat:'resp',indicacao:'Broncodilatador anticolin ergico; broncoespasmo; DBP',
+prep:'MDI 17 mcg/puff. Nebulizacao 200 mcg/mL (0,02%) preservative-free 2,5 mL.',
+doses:[
+{label:'Nebulizacao',val:'75-175',unid:'mcg/dose',via:'Nebulizacao',freq:'6/6h a 8/8h'},
+{label:'MDI com spacer',val:'34-68',unid:'mcg/dose (2-4 puffs)',via:'MDI + spacer',freq:'6/6h a 8/8h'}],
+alertas:['Borrifar nos olhos causa glaucoma transitorio e midraise'],
+dil:{apres:'Solucao 0,02% (200 mcg/mL) 2,5 mL; MDI 17 mcg/puff',alvo:0.2,diluente:'SF 0,9% se necessario',vol_final:2.5,unit:'mg',nota:'Nebulizacao: 0,02% unit-dose 2,5 mL (500 mcg total). Usar integra ou aspirar volume necessario.'},
+ref:'NeoFax Nov. 2024 -- Ipratropium'},
+
+{id:'palivizumab',nome:'Palivizumab (Synagis)',cat:'resp',indicacao:'Profilaxia do VSR (1a escolha: nirsevimab)',
+prep:'50/100 mg vials -- uso imediato; NAO recostituir; NAO congelar ou agitar. Refrigerado 2-8C.',
+doses:[{label:'Profilaxia',val:15,unid:'mg/kg/dose',via:'IM (face anterolateral da coxa)',freq:'Mensal durante a estacao do VSR (max 5 doses)'}],
+alertas:['AAP: nirsevimab e preferido ao palivizumab por maior eficacia, duracao e conveniencia'],
+dil:{apres:'50 mg e 100 mg vials',alvo:100,diluente:'Sem diluicao - IM direto',vol_final:1,unit:'mg',nota:'IM: nao reconstituir. Concentracao 100 mg/mL. Volume = dose(mg)/100 mL.'},
+ref:'NeoFax Nov. 2024 -- Palivizumab'},
+
+{id:'omeprazol',nome:'Omeprazol',cat:'gi',indicacao:'DRGE grave; esofagite erosiva',
+prep:'Suspensao 0,6-4 mg/mL (estavel 28 dias refrigerado).',
+doses:[{label:'RN a termo e lactentes',val:'0,5-1,5',unid:'mg/kg/dose',via:'VO',freq:'24/24h'}],
+alertas:['IBPs NAO indicados para regurgitacao visivel em RN saudaveis','Riscos > beneficios em RNPT para DRGE'],
+dil:{apres:'Sol oral 0,6-4 mg/mL (extemporanea)',alvo:2,diluente:'Oral',vol_final:0,unit:'mg',nota:'VO: sol 2 mg/mL -> volume = dose(mg)/2 mL.'},
+ref:'NeoFax Nov. 2024 -- Omeprazole'},
+
+{id:'pantoprazol',nome:'Pantoprazol',cat:'gi',indicacao:'DRGE; profilaxia de ulcera de estresse',
+prep:'Suspensao extemporanea 2 mg/mL (estavel 62 dias refrigerado). IV: 40 mg po.',
+doses:[{label:'Neonatos',val:2.5,unid:'mg/dose (FIXA, nao por kg)',via:'VO',freq:'24/24h'}],
+alertas:['IBPs: evidencia insuficiente de beneficio em RNPT para DRGE'],
+dil:{apres:'40 mg po; Sol extemporanea 2 mg/mL',alvo:2,diluente:'SF 0,9% ou SG 5%',vol_final:20,unit:'mg',nota:'IV: reconstituir 40 mg em 10 mL SF (4 mg/mL); diluir ate 2 mg/mL. VO: sol 2 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Pantoprazole'},
+
+{id:'ranitidina',nome:'Ranitidina (retirada EUA)',cat:'gi',indicacao:'H2 bloqueador -- verificar disponibilidade local',
+prep:'NOTA: Retirada do mercado nos EUA em 01/04/2020 (contaminacao por NDMA). Verificar regulacao local.',
+doses:[
+{label:'IV -- a termo',val:1.5,unid:'mg/kg/dose',via:'IV push lento',freq:'8/8h'},
+{label:'IV -- prematuro',val:0.5,unid:'mg/kg/dose',via:'IV',freq:'12/12h'},
+{label:'VO',val:2,unid:'mg/kg/dose',via:'VO',freq:'8/8h'}],
+alertas:['H2 bloqueadores em RNPT: risco de sepse bacteriana e fungica','Candidose: facilitam colonizacao intestinal'],
+dil:{apres:'25 mg/mL (amp 2 mL = 50 mg)',alvo:2.5,diluente:'SF 0,9% ou SG 5%',vol_final:20,unit:'mg',nota:'NOTA: retirada nos EUA. Diluir para 2,5 mg/mL. Infundir em 15-20 min.'},
+ref:'NeoFax Nov. 2024 -- RaNITIdine'},
+
+{id:'famotidina',nome:'Famotidina',cat:'gi',indicacao:'H2 bloqueador -- alternativa a ranitidina',
+prep:'IV: 10 mg/mL (concentrado) -- diluir para 2-4 mg/mL. VO: 8 mg/mL suspensao.',
+doses:[
+{label:'IV',val:'0,25-0,5',unid:'mg/kg/dose',via:'IV (2 min)',freq:'24/24h'},
+{label:'VO',val:'0,5-1',unid:'mg/kg/dose',via:'VO',freq:'24/24h'}],
+alertas:['Mesmos riscos dos H2 bloqueadores em RNPT'],
+dil:{apres:'10 mg/mL concentrado; Oral 8 mg/mL',alvo:4,diluente:'SF 0,9% ou SG 5%',vol_final:2.5,unit:'mg',nota:'IV: diluir para 2-4 mg/mL. Administrar em 2 min. VO: 8 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Famotidine'},
+
+{id:'metoclopramida',nome:'Metoclopramida',cat:'gi',indicacao:'Facilitar esvaziamento gastrico; dismotilidade',
+prep:'5 mg/mL IV. VO: 1 mg/mL.',
+doses:[{label:'IV ou VO',val:'0,033-0,1',unid:'mg/kg/dose',via:'IV (15 min) ou VO',freq:'8/8h'}],
+alertas:['Reacoes extrapiramidais (distonia) -- criancas mais susceptiveis','Comprimidos NAO recomendados em neonatos (meta-hemoglobinemia)','Uso de curto prazo apenas'],
+dil:{apres:'5 mg/mL injetavel; Oral 1 mg/mL',alvo:0.5,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'IV: diluir para 0,5 mg/mL. Infundir em 15 min. VO: 1 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Metoclopramide'},
+
+{id:'diazoxido',nome:'Diazoxido',cat:'gi',indicacao:'Hipoglicemia por hiperinsulinismo',
+prep:'Capsulas 50 mg. Suspensao oral 50 mg/mL (alcool 7,25%).',
+doses:[
+{label:'Inicial',val:10,unid:'mg/kg/dia',via:'VO',freq:'dividido 8/8h'},
+{label:'Manutencao usual',val:'8-15',unid:'mg/kg/dia',via:'VO',freq:'dividido 8/8h a 12/12h'}],
+alertas:['Se ineficaz em 2-3 semanas -- descontinuar','Retencao de sodio e liquido -- usar com tiazidico concomitante'],
+monit:'Glicemia cuidadosa. Eletrolitos, BUN, creatinina.',dil:{apres:'Sol oral 50 mg/mL (alcool 7,25%)',alvo:50,diluente:'Oral',vol_final:0,unit:'mg',nota:'VO: 50 mg/mL -> volume = dose(mg)/50 mL.'},
+ref:'NeoFax Nov. 2024 -- Diazoxide'},
+
+{id:'octreotida',nome:'Octreotida',cat:'gi',indicacao:'Hipoglicemia por hiperinsulinismo refrataria; quilotorax congenito',
+prep:'50/100/500 mcg/mL ampolas. Refrigerado. Para infusao IV: diluir para 10-25 mcg/mL.',
+doses:[
+{label:'Hiperinsulinismo -- SC ou IV',val:1,unid:'mcg/kg/dose',via:'SC ou IV',freq:'6/6h; titular ate 10 mcg/kg/dose'},
+{label:'Quilotorax -- infusao IV',val:1,unid:'mcg/kg/h',via:'IV continuo',freq:'inicial; aumentar 1 mcg/kg/h/24h; max 10 mcg/kg/h'}],
+alertas:['ECN relatada em RN a termo (6 casos para hiperinsulinismo; 2 para quilotorax)','Hiperglicemia em pacientes para quilotorax'],
+monit:'Glicemia de perto. Sinais de ECN.',dil:{apres:'50/100/500 mcg/mL ampolas',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mcg',infusao_continua:true,nota:'SC: sem diluicao. IV infusao: diluir para 10-25 mcg/mL.'},
+ref:'NeoFax Nov. 2024 -- Octreotide'},
+
+{id:'ursodiol',nome:'Ursodiol (Acido Ursodesoxicolico)',cat:'gi',indicacao:'Colestase associada a NP; atresia biliar',
+prep:'Comprimidos 250/500 mg. Suspensao extemporanea 20 mg/mL (estavel 91 dias).',
+doses:[{label:'Colestase',val:'10-15',unid:'mg/kg/dose',via:'VO',freq:'12/12h'}],
+dil:{apres:'Sol extemporanea 20 mg/mL',alvo:20,diluente:'Oral',vol_final:0,unit:'mg',nota:'VO: 20 mg/mL -> volume = dose(mg)/20 mL.'},
+ref:'NeoFax Nov. 2024 -- Ursodiol'},
+
+{id:'glicose',nome:'Glicose (Dextrose)',cat:'gi',indicacao:'Hipoglicemia neonatal; hipercalemia (com insulina); NP',
+prep:'D10W (100 mg/mL), D50W (500 mg/mL), gel de dextrose 40%.',
+doses:[
+{label:'Hipoglicemia -- bolus IV D10W',val:0.2,unid:'g/kg (= 2 mL/kg D10W)',via:'IV',freq:'dose unica'},
+{label:'Hipoglicemia -- manutencao IV',val:'5-8',unid:'mg/kg/min',via:'IV continuo',freq:'infusao; titular'},
+{label:'Hipoglicemia -- gel bucal (35s+, < 48h)',val:200,unid:'mg/kg (gel 40%)',via:'Mucosa bucal',freq:'pode repetir ate 6x em 48h'},
+{label:'NP -- taxa inicial de glicose',val:'6-8',unid:'mg/kg/min',via:'IV continuo',freq:'avacar ate 10-12 mg/kg/min'}],
+alertas:['Nao descontinuar infusao de glicose abruptamente (hipoglicemia rebote)'],
+dil:{apres:'D10W (100 mg/mL); D50W (500 mg/mL); Gel 40%',alvo:100,diluente:'Agua esteril ou SF 0,9%',vol_final:10,unit:'mg',nota:'Bolus hipoglicemia: D10W 2 mL/kg = 0,2 g/kg. Gel bucal 40%: volume = dose(mg)/400 mL.'},
+ref:'NeoFax Nov. 2024 -- Dextrose'},
+
+{id:'gluconato_ca',nome:'Gluconato de Calcio 10%',cat:'electro',indicacao:'Hipocalcemia sintomatica; suporte cardiovascular; hipercalemia',
+prep:'10% = 100 mg/mL = 9,3 mg Ca2+ elem/mL = 0,465 mEq Ca2+/mL. Osmolalidade 700 mOsm/L.',
+doses:[
+{label:'Hipocalcemia sintomatica IV',val:'100-200',unid:'mg/kg (gluconato 10%)',via:'IV lento (10-30 min)',obs:'= 1-2 mL/kg; ECG continuo'},
+{label:'Manutencao',val:'538-860',unid:'mg/kg/dia (gluconato 10%)',via:'IV continuo',freq:'dividir em 24h'},
+{label:'RCP',val:'60-100',unid:'mg/kg (gluconato 10%)',via:'IV push lento/IO',freq:'max 2000 mg/dose'},
+{label:'NP -- RNPT',val:'2-4',unid:'mEq/kg/dia',via:'IV em NP',freq:'dividir em 24h'}],
+alertas:['Bradicardia e PCR com infusao RAPIDA -- ECG obrigatorio','NECROSE por extravasamento -- acesso central preferencial','NAO coadministrar com ceftriaxona (precipitacao pulmonar/renal -- obito neonatal)'],
+monit:'Ca2+ ionico. ECG.',dil:{apres:'Gluconato Ca 10% = 100 mg/mL',alvo:100,diluente:'SG 5% ou SF 0,9%',vol_final:10,unit:'mg',nota:'10% = 100 mg/mL = 0,465 mEq/mL. Para bolus lento: pode usar 10% diretamente. Para manutencao IV: diluir.'},
+ref:'NeoFax Nov. 2024 -- Calcium Gluconate'},
+
+{id:'kcl',nome:'Cloreto de Potassio (KCl)',cat:'electro',indicacao:'Hipocalemia; suplementacao de manutencao',
+prep:'2 mEq/mL (concentrado) -- SEMPRE diluir antes de usar.',
+doses:[
+{label:'Oral (reposicao)',val:'0,5-1',unid:'mEq/kg/dia',via:'VO',freq:'dividido com alimentacoes'},
+{label:'IV em solucao (manutencao)',val:'2-4',unid:'mEq/kg/dia',via:'IV em solucao',freq:'infundido em 24h'},
+{label:'IV (reposicao hipocalemia aguda)',val:0.5,unid:'mEq/kg',via:'IV lento (1-2h)',freq:'max 0,5 mEq/kg/h'}],
+alertas:['NUNCA administrar KCl IV concentrado ou em bolus -- PCR IMEDIATA','Concentracao max IV periferico: 40 mEq/L; Central: 80 mEq/L','ECG obrigatorio em reposicao IV central'],
+monit:'K+ serico. ECG continuo em reposicao IV central.',dil:{apres:'KCl 2 mEq/mL concentrado',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mEq',nota:'NUNCA usar concentrado. Max periferica: 40 mEq/L. Max central: 80 mEq/L. Reposicao: diluir 0,5 mEq/mL.'},
+ref:'NeoFax Nov. 2024 -- Potassium chloride'},
+
+{id:'bicarb_sod',nome:'Bicarbonato de Sodio',cat:'electro',indicacao:'Acidose metabolica com gap normal; hipercalemia com acidose',
+prep:'4,2% = 0,5 mEq/mL (PREFERIDO em neonatos). 8,4% = 1 mEq/mL (diluir 1:1 com agua esteril).',
+doses:[
+{label:'Acidose metabolica',val:null,unid:'formula: mEq = EB x peso(kg) x 0,3',via:'IV LENTO (30 min)',freq:'corrigir metade inicialmente'},
+{label:'Hipercalemia com acidose',val:1,unid:'mEq/kg',via:'IV lento (10-15 min)',freq:'dose unica; max 50 mEq'}],
+alertas:['Usar SOMENTE 4,2% (0,5 mEq/mL) em neonatos','Infusao rapida: hipernatremia e HIC em prematuros','Max 8 mEq/kg/dia','NAO misturar com calcio'],
+monit:'Gasometria e Ca2+ e K+ sericos.',dil:{apres:'NaHCO3 4,2% = 0,5 mEq/mL; 8,4% = 1 mEq/mL',alvo:0.5,diluente:'Agua esteril (se usar 8,4%)',vol_final:10,unit:'mEq',nota:'USAR 4,2% (0,5 mEq/mL) em neonatos. Se usar 8,4%: diluir 1:1 com agua esteril. Infundir em 30 min.'},
+ref:'NeoFax Nov. 2024 -- Sodium Bicarbonate'},
+
+{id:'sulfato_mg',nome:'Sulfato de Magnesio',cat:'electro',indicacao:'Hipomagnesemia; torsades de pointes; NP',
+prep:'50% = 500 mg/mL = 4 mEq Mg/mL. DILUIR para <= 200 mg/mL antes de IV.',
+doses:[
+{label:'Hipomagnesemia -- IV',val:'25-50',unid:'mg/kg',via:'IV (10-20 min)',freq:'dose unica'},
+{label:'Torsades de pointes',val:'25-50',unid:'mg/kg',via:'IV/IO rapido',freq:'dose unica'},
+{label:'NP -- necessidade diaria',val:'0,3-0,5',unid:'mEq/kg/dia',via:'IV em NP',freq:'diariamente'}],
+alertas:['Hipocalcemia pode ocorrer com infusao rapida'],
+monit:'Mg serico e eletrolitos. Funcao renal.',dil:{apres:'MgSO4 50% = 500 mg/mL = 4 mEq Mg/mL',alvo:200,diluente:'SF 0,9% ou SG 5%',vol_final:2.5,unit:'mg',nota:'DILUIR para <= 200 mg/mL (20%). Para bolus IV: diluir para 100 mg/mL (10%).'},
+ref:'NeoFax Nov. 2024 -- Magnesium sulfate'},
+
+{id:'cloreto_sod',nome:'Cloreto de Sodio (NaCl 0,9%)',cat:'electro',indicacao:'Ressuscitacao volemica; suplementacao de sodio em RNPT',
+prep:'Solucao 0,9% para IV.',
+doses:[
+{label:'Ressuscitacao (expansao volemica)',val:10,unid:'mL/kg',via:'IV em 5-10 min',freq:'pode repetir se sem melhora'},
+{label:'Suplementacao RNPT',val:'3-5',unid:'mEq/kg/dia',via:'IV ou VO',freq:'dividido'},
+{label:'Lactentes saudaveis',val:'2-3',unid:'mEq/kg/dia',via:'IV ou VO',freq:'dividido'}],
+alertas:['RNPT < 30s: administrar mais devagar para reduzir risco de HIC'],
+dil:{apres:'NaCl 0,9% (frascos 50-1000 mL)',alvo:9,diluente:'Pronto para uso',vol_final:0,unit:'mg',nota:'SF 0,9%: usar diretamente. Ressuscitacao: 10 mL/kg IV em 5-10 min.'},
+ref:'NeoFax Nov. 2024 -- Sodium Chloride'},
+
+{id:'furosemida',nome:'Furosemida',cat:'diur',indicacao:'DBP; ICC; edema pulmonar; oliguria por sobrecarga hidrica',
+prep:'10 mg/mL IV e oral 8-10 mg/mL. Proteger da luz.',
+doses:[
+{label:'IV -- prematuro',val:1,unid:'mg/kg/dose',via:'IV lento',freq:'24/24h'},
+{label:'IV -- a termo < 1 mes',val:1,unid:'mg/kg/dose',via:'IV lento',freq:'24/24h'},
+{label:'IV -- a termo > 1 mes',val:1,unid:'mg/kg/dose',via:'IV lento',freq:'6-8/6-8h'},
+{label:'VO',val:'1-4',unid:'mg/kg/dose',via:'VO',freq:'12-24/12-24h'}],
+alertas:['Infundir em MINIMO 30 min em RNPT (risco de surdez com bolus rapido)','Nefrocalcinose com uso prolongado','Hipocalemia, hiponatremia, hipocloremia','Furosemida + aminoglicosideo: nefrotoxicidade'],
+monit:'Eletrolitos e funcao renal. USG renal em RNPT com uso prolongado.',dil:{apres:'10 mg/mL injetavel (amp 2 mL = 20 mg)',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:20,unit:'mg',nota:'Diluir para 1-2 mg/mL. RNPT: infundir em >= 30 min. Proteger da luz.'},
+ref:'NeoFax Nov. 2024 -- Furosemide'},
+
+{id:'hidroclorotiazida',nome:'Hidroclorotiazida',cat:'diur',indicacao:'DBP -- uso oral cronico; HAS; combinacao com espironolactona',
+prep:'Comprimidos 12,5-100 mg; suspensao 5 mg/mL.',
+doses:[{label:'Dose usual',val:'1-2',unid:'mg/kg/dose',via:'VO',freq:'12/12h'}],
+alertas:['Hipocalemia, hiperglicemia, hiperuricemia'],
+dil:{apres:'Comp 25-100 mg; Sol 5 mg/mL',alvo:5,diluente:'Oral',vol_final:0,unit:'mg',nota:'VO: sol 5 mg/mL -> volume = dose(mg)/5 mL.'},
+ref:'NeoFax Nov. 2024 -- HydroCHLOROthiazide'},
+
+{id:'espironolactona',nome:'Espironolactona',cat:'diur',indicacao:'DBP (com tiazidico); ICC; poupador de potassio',
+prep:'Suspensao 5 mg/mL. Comprimidos 25/50/100 mg.',
+doses:[{label:'Dose usual',val:'1-3',unid:'mg/kg/dose',via:'VO',freq:'24/24h'}],
+alertas:['Hipercalemia -- monitorar K+','Hiponatremia e hipovolemia'],
+monit:'K+ serico. K+ urinario como indicador de eficacia.',dil:{apres:'Comp 25-100 mg; Sol extemporanea 5 mg/mL',alvo:5,diluente:'Oral',vol_final:0,unit:'mg',nota:'VO: sol 5 mg/mL -> volume = dose(mg)/5 mL.'},
+ref:'NeoFax Nov. 2024 -- Spironolactone'},
+
+{id:'bumetanida',nome:'Bumetanida',cat:'diur',indicacao:'Diurese em oligo/anuria refrataria a furosemida; ICC',
+prep:'0,25 mg/mL (contem benzil alcool). Diluir 0,125 mg/mL para neonatos.',
+doses:[
+{label:'RNPT < 34s ou RN 1o mes',val:'0,005-0,05',unid:'mg/kg/dose',via:'IV push lento, IM ou VO',freq:'24/24h'},
+{label:'Infusao continua',val:'1-10',unid:'mcg/kg/h',via:'IV continuo',freq:'infusao'}],
+alertas:['Potencialmente ototoxica','Pode deslocar bilirrubina da albumina em altas doses'],
+dil:{apres:'0,25 mg/mL injetavel',alvo:0.125,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir para 0,125 mg/mL em neonatos (diluicao 1:1 com SF).'},
+ref:'NeoFax Nov. 2024 -- Bumetanide'},
+
+{id:'insulina_regular',nome:'Insulina Regular Humana',cat:'hormon',indicacao:'Hiperglicemia neonatal (RNEBP); hipercalemia; diabetes mellitus neonatal',
+prep:'100 UI/mL. Insulina ADSORVE ao plastico do equipo -- pre-flush com 20 mL da solucao antes de ligar ao paciente.',
+doses:[
+{label:'Hiperglicemia -- infusao IV',val:'0,01-0,1',unid:'UI/kg/h',via:'IV continuo',freq:'infusao; titular por glicemia'},
+{label:'Hipercalemia -- com glicose',val:'0,1-0,2',unid:'UI/kg/h',via:'IV continuo',freq:'com glicose 0,5 g/kg/h; titular'}],
+alertas:['Hipoglicemia rapida -- glicemia a cada 15-30 min no inicio','Insulina adsorve ao plastico -- pre-flush 20 mL obrigatorio'],
+monit:'Glicemia frequente.',dil:{apres:'100 UI/mL (frascos 10 mL = 1000 UI)',alvo:1,diluente:'SF 0,9%',vol_final:100,unit:'UI',infusao_continua:true,nota:'PRE-FLUSH 20 mL da solucao antes de ligar ao paciente (adsorcao ao plastico). Diluir para 1 UI/mL.'},
+ref:'NeoFax Nov. 2024 -- Insulin Human Regular'},
+
+{id:'hidrocortisona',nome:'Hidrocortisona',cat:'hormon',indicacao:'Hipotensao vasopressor-refrataria; insuficiencia adrenal; CAH; DBP cronica',
+prep:'Solu-Cortef (sem benzil alcool). 100/250/500/1000 mg.',
+doses:[
+{label:'Hipotensao refrataria (dose de stress)',val:'20-30',unid:'mg/m2/dia IV',via:'IV',freq:'dividir 8/8h; aprox 1 mg/kg/dose'},
+{label:'CAH -- crise adrenal em lactentes',val:25,unid:'mg',via:'IV',freq:'dose de ataque; seguir 6,25 mg IV 6/6h'},
+{label:'DBP (protocolo)',val:5,unid:'mg/kg/dia',via:'IV',freq:'6/6h x 7 dias; depois reduzir progressivamente'}],
+alertas:['Hiperglicemia, HAS, retencao hidrossalina','Risco de perfuracao GI com indometacina concomitante','Risco de candidose disseminada'],
+monit:'Glicemia, PA, guaiaco de aspirado gastrico.',dil:{apres:'Solu-Cortef 100-500 mg po',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:100,unit:'mg',nota:'Reconstituir; diluir para 1-2 mg/mL. Infundir em 15-30 min.'},
+ref:'NeoFax Nov. 2024 -- Hydrocortisone'},
+
+{id:'levotiroxina',nome:'Levotiroxina (T4)',cat:'hormon',indicacao:'Hipotireoidismo congenito',
+prep:'Comprimidos e solucao oral 13-300 mcg. Triturar comprimido em agua -- usar imediatamente.',
+doses:[
+{label:'RN a termo -- oral inicial',val:'10-15',unid:'mcg/kg/dia',via:'VO',freq:'24/24h (em jejum)'},
+{label:'RNPT -- oral inicial',val:'8-10',unid:'mcg/kg/dia',via:'VO',freq:'24/24h'},
+{label:'IV (impossibilidade de VO)',val:'5-8',unid:'mcg/kg/dia',via:'IV',freq:'24/24h'}],
+alertas:['Separar de ferro, calcio, soja e antiacidos em >= 4h','Craniosinostose precoce com superdosagem prolongada'],
+monit:'T4 alvo: 10-16 mcg/dL; TSH em declinio apos 2 semanas.',dil:{apres:'Comp e sol oral 13-300 mcg; IV 200-500 mcg po',alvo:0.04,diluente:'SF 0,9% (IV)',vol_final:10,unit:'mcg',nota:'VO: triturar comp em agua, usar imediatamente. IV: diluir para 40 mcg/mL. Nao misturar.'},
+ref:'NeoFax Nov. 2024 -- Levothyroxine'},
+
+{id:'vitamina_k',nome:'Vitamina K1 (Fitomenadiona)',cat:'vit',indicacao:'Profilaxia de doenca hemorragica do RN',
+prep:'2 mg/mL e 10 mg/mL. Via IM preferencial.',
+doses:[
+{label:'RN >= 1500g',val:1,unid:'mg (DOSE FIXA)',via:'IM',freq:'dose unica ao nascer'},
+{label:'RN < 1500g',val:0.5,unid:'mg (DOSE FIXA)',via:'IM',freq:'dose unica ao nascer'}],
+alertas:['Via IM preferencial -- risco de anafilaxia IV'],
+dil:{apres:'2 mg/mL e 10 mg/mL injetavel',alvo:2,diluente:'IM direto',vol_final:0,unit:'mg',nota:'IM: usar 2 mg/mL. Volume = dose(mg)/2 mL. Via IM preferencial.'},
+ref:'NeoFax Nov. 2024 -- Vitamin K1'},
+
+{id:'vitamina_d',nome:'Vitamina D (Colecalciferol)',cat:'vit',indicacao:'Suplementacao em RNPT e RN a termo',
+prep:'Gotas: verificar concentracao do produto disponivel (200-500 UI/gota).',
+doses:[
+{label:'RNPT < 32s',val:800,unid:'UI/dia',via:'VO',freq:'24/24h',obs:'Descontar VitD da dieta e polivitaminico'},
+{label:'RNPT 32-36s',val:600,unid:'UI/dia',via:'VO',freq:'24/24h'},
+{label:'RN >= 37s',val:400,unid:'UI/dia',via:'VO',freq:'24/24h'}],
+alertas:['Alvo serico 25-OH VitD: 20-50 ng/mL','Coordenar com aporte da dieta e polivitaminico'],
+dil:{apres:'Gotas: 200-500 UI/gota (verificar produto)',alvo:400,diluente:'Oral - gotas',vol_final:0,unit:'UI',nota:'Verificar concentracao do produto local. Dose em UI/dia.'},
+ref:'NeoFax Nov. 2024 -- Vitamin D / Protocolo UCIN Canguru'},
+
+{id:'ferro_oral',nome:'Sulfato Ferroso (Ferro oral)',cat:'vit',indicacao:'Prevencao e tratamento de anemia ferropriva em prematuros',
+prep:'Gotas: 25 mg/mL = 5 mg Fe elementar/mL. Iniciar apos 2 semanas de vida.',
+doses:[
+{label:'RNPT < 1000g',val:4,unid:'mg/kg/dia Fe elem',via:'VO',freq:'24/24h'},
+{label:'RNPT 1000-1499g',val:3,unid:'mg/kg/dia Fe elem',via:'VO',freq:'24/24h'},
+{label:'RNPT 1500-2499g',val:2,unid:'mg/kg/dia Fe elem',via:'VO',freq:'24/24h'},
+{label:'RN a termo',val:1,unid:'mg/kg/dia Fe elem',via:'VO',freq:'24/24h'},
+{label:'Com eritropoietina',val:6,unid:'mg/kg/dia Fe elem',via:'VO',freq:'24/24h'}],
+alertas:['Administrar preferencialmente diluido em formula'],
+monit:'Hemoglobina e reticulocitos.',dil:{apres:'Gotas sulfato ferroso 25 mg/mL = 5 mg Fe elem/mL',alvo:5,diluente:'Oral - gotas',vol_final:0,unit:'mg_fe',nota:'Fe elementar: 5 mg/mL. Volume = dose(mg Fe elem)/5 mL. Diluir em formula.'},
+ref:'NeoFax Nov. 2024 -- Ferrous sulfate'},
+
+{id:'acido_folico',nome:'Acido Folico',cat:'vit',indicacao:'Suplementacao em RNPT; com deficiencia materna; tratamento com pirimetamina',
+doses:[
+{label:'Ingesta adequada -- a termo',val:65,unid:'mcg/dia',via:'VO ou enteral',freq:'diariamente'},
+{label:'Enteral -- RNPT',val:'25-50',unid:'mcg/kg/dia',via:'Enteral',freq:'max 65 mcg/dia'},
+{label:'NP -- a termo',val:140,unid:'mcg/dia',via:'IV',freq:'diariamente'}],
+dil:{apres:'Comp 0,4-5 mg; Sol oral 0,05 mg/mL; IV 5 mg/mL',alvo:0.05,diluente:'Oral ou IV diluido',vol_final:10,unit:'mg',nota:'Oral: sol 0,05 mg/mL. IV: diluir para 0,1 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Folic Acid'},
+
+{id:'piridoxina',nome:'Piridoxina (Vitamina B6)',cat:'vit',indicacao:'Diagnostico e tratamento de convulsoes piridoxina-dependentes',
+prep:'100 mg/mL IV. Oral: comprimidos/solucao.',
+doses:[
+{label:'Dose diagnostica IV',val:'50-100',unid:'mg (DOSE FIXA)',via:'IV push',freq:'dose unica -- EEG idealmente'},
+{label:'Manutencao oral',val:'50-100',unid:'mg/dia',via:'VO',freq:'24/24h'}],
+alertas:['Depressao neurologica e respiratoria prolongada pode ocorrer com dose IV','Monitorizacao cardiorrespiratoria obrigatoria'],
+monit:'EEG durante dose diagnostica IV.',dil:{apres:'100 mg/mL injetavel',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'IV diagnóstico: diluir para 10 mg/mL. Monitorar respiracao. Manter ventilacao disponivel.'},
+ref:'NeoFax Nov. 2024 -- Pyridoxine'},
+
+{id:'atropina',nome:'Atropina',cat:'other',indicacao:'Bradicardia; pre-medicacao para intubacao (vagolitico)',
+prep:'Multiplas concentracoes: 0,05-1 mg/mL.',
+doses:[
+{label:'Bradicardia IV/IM',val:'0,01-0,03',unid:'mg/kg/dose',via:'IV ou IM',freq:'10-15 min (max cumulativo 0,04 mg/kg)'},
+{label:'Pre-intubacao IV',val:'0,01-0,02',unid:'mg/kg',via:'IV (1 min)',freq:'imediatamente antes das pre-meds'}],
+alertas:['Arritmias cardiacas (especialmente 2 min pos-IV)','Febre em lactentes com lesao encefalica'],
+dil:{apres:'0,25 mg/mL (amp 1 mL = 0,25 mg); 0,5 mg/mL; 1 mg/mL',alvo:0.1,diluente:'SF 0,9%',vol_final:2.5,unit:'mg',nota:'Para doses neonatais: diluir para 0,1 mg/mL (1 mL amp 0,5 mg + 4 mL SF).'},
+ref:'NeoFax Nov. 2024 -- Atropine'},
+
+{id:'succinilcolina',nome:'Succinilcolina',cat:'other',indicacao:'Intubacao de sequencia rapida; paralisia muscular de emergencia',
+prep:'100 mg/mL e 20 mg/mL. Diluir para 1-2 mg/mL. Refrigerar.',
+doses:[
+{label:'IV -- intubacao',val:'1-2',unid:'mg/kg',via:'IV',freq:'dose unica; pode repetir 1 mg/kg ate max 4 mg/kg'},
+{label:'IM (sem acesso IV)',val:'2-4',unid:'mg/kg',via:'IM',freq:'dose unica'}],
+alertas:['BLOQUEIO NEUROMUSCULAR -- SOMENTE com manejo de vias aereas garantido','Risco de PCR por hipercalemia/rabdomiolise em criancas com miopatia nao diagnosticada'],
+monit:'SpO2, FC e PA continuos.',dil:{apres:'20 mg/mL e 100 mg/mL; Refrigerado',alvo:2,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Diluir para 1-2 mg/mL para facilitar dose precisa em neonatos.'},
+ref:'NeoFax Nov. 2024 -- Succinylcholine'},
+
+{id:'pancuronio',nome:'Pancuronio',cat:'other',indicacao:'Paralisia neuromuscular para VM; reducao de assincronia ventilatoria',
+prep:'1 mg/mL (10 mL) e 2 mg/mL. Benzil alcool.',
+doses:[
+{label:'Dose teste',val:0.02,unid:'mg/kg',via:'IV push (5-10 s)',freq:'dose de teste'},
+{label:'Dose usual (manutencao)',val:'0,04-0,15',unid:'mg/kg',via:'IV push',freq:'1-2h conforme necessidade'}],
+alertas:['SOMENTE com analgesia e/ou sedacao adequada','Taquicardia e alteracoes de PA frequentes'],
+monit:'Sinais vitais frequentemente.',dil:{apres:'1 mg/mL (amp 10 mL = 10 mg)',alvo:1,diluente:'Pronto para uso',vol_final:0,unit:'mg',nota:'1 mg/mL: usar diretamente. Volume = dose(mg) em mL. IV push 5-10 s.'},
+ref:'NeoFax Nov. 2024 -- Pancuronium'},
+
+{id:'rocuronio',nome:'Rocuronio',cat:'other',indicacao:'Adjunto anestesico para intubacao traqueal',
+prep:'10 mg/mL multidose. Diluir para 1 mg/mL.',
+doses:[
+{label:'Intubacao -- dose usual',val:0.6,unid:'mg/kg',via:'IV push (5-10 s)',freq:'dose unica'},
+{label:'Intubacao -- dose menor (sevoflurano)',val:0.45,unid:'mg/kg',via:'IV',freq:'dose unica'},
+{label:'Manutencao intraoperatoria',val:0.15,unid:'mg/kg',via:'IV',freq:'reaparecimento de T3'},
+{label:'Infusao continua',val:'7-10',unid:'mcg/kg/min',via:'IV continuo',freq:'infusao'}],
+alertas:['SOMENTE com sedacao/anestesia adequada'],
+dil:{apres:'10 mg/mL multidose',alvo:1,diluente:'SF 0,9% ou SG 5% para infusao',vol_final:10,unit:'mg',nota:'Bolus intubacao: usar 10 mg/mL diretamente. Infusao: diluir para 1 mg/mL.'},
+ref:'NeoFax Nov. 2024 -- Rocuronium'},
+
+{id:'heparina',nome:'Heparina',cat:'other',indicacao:'ECMO (anticoagulacao); manutencao de cateteres; trombose',
+prep:'10-20000 UI/mL disponivel.',
+doses:[
+{label:'ECMO -- ataque',val:100,unid:'UI/kg',via:'IV',freq:'antes da canulacao'},
+{label:'Patencia cateter venoso central',val:0.5,unid:'UI/kg/h',via:'IV continuo',freq:'infusao'},
+{label:'Trombose -- ataque',val:75,unid:'UI/kg',via:'IV (10 min)',freq:'dose unica'},
+{label:'Trombose -- manutencao',val:28,unid:'UI/kg/h',via:'IV continuo',freq:'ajustar por TTPa (anti-Xa 0,35-0,7)'}],
+alertas:['Manter protamina disponivel','Plaquetas a cada 2-3 dias (HIT)'],
+monit:'TTPa, plaquetas. Anti-Xa 0,35-0,7 UI/mL para trombose.',dil:{apres:'Multiplas: 10 UI/mL (flush), 1000 UI/mL, 5000 UI/mL',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'UI',infusao_continua:true,nota:'Infusao trombose: diluir para 1-10 UI/mL. Flush cateter: 10 UI/mL pre-diluido.'},
+ref:'NeoFax Nov. 2024 -- Heparin'},
+
+{id:'enoxaparina',nome:'Enoxaparina',cat:'other',indicacao:'Trombose -- tratamento e profilaxia',
+prep:'100 mg/mL em seringas prefilled preservativo-free.',
+doses:[
+{label:'Tratamento -- a termo',val:1.7,unid:'mg/kg/dose',via:'SC',freq:'12/12h (ajustar por anti-Xa)'},
+{label:'Tratamento -- prematuro',val:2,unid:'mg/kg/dose',via:'SC',freq:'12/12h (anti-Xa alvo 0,5-1,0)'},
+{label:'Profilaxia',val:0.75,unid:'mg/kg/dose',via:'SC',freq:'12/12h (anti-Xa alvo 0,1-0,4)'}],
+alertas:['Multidose vial com benzil alcool -- NAO usar em neonatos'],
+monit:'Anti-Xa 4-6h apos dose SC.',dil:{apres:'100 mg/mL seringas prefilled preservativo-free',alvo:100,diluente:'SC direto',vol_final:0,unit:'mg',nota:'SC: usar seringa prefilled diretamente. Volume = dose(mg)/100 mL.'},
+ref:'NeoFax Nov. 2024 -- Enoxaparin'},
+
+{id:'fentolamina',nome:'Fentolamina',cat:'other',indicacao:'Prevencao de necrose por extravasamento de vasoconstritores',
+prep:'5 mg po. Reconstituir 1 mL SF; diluir para 0,5 mg/mL com 9 mL SF adicional.',
+doses:[{label:'Extravasamento -- SC',val:null,unid:'1-5 mL de 0,5 mg/mL SC na area afetada',via:'5 injecoes de 0,2 mL ao redor do extravasamento',freq:'o mais precocemente possivel (< 12h)'}],
+dil:{apres:'5 mg po',alvo:0.5,diluente:'SF 0,9%',vol_final:10,unit:'mg',nota:'Reconstituir 5 mg em 1 mL SF (5 mg/mL); adicionar 9 mL SF -> 0,5 mg/mL. Injetar SC 0,2 mL por ponto ao redor do extravasamento.'},
+ref:'NeoFax Nov. 2024 -- Phentolamine'},
+
+{id:'sucrose_24',nome:'Sacarose 24%',cat:'other',indicacao:'Analgesia nao-farmacologica em procedimentos dolorosos',
+prep:'Sweet-Ease 24% (15 mL).',
+doses:[
+{label:'RNPT',val:'0,5-1',unid:'mL',via:'Topico na lingua',freq:'2 min antes do procedimento; oferecer chupeta apos'},
+{label:'RN a termo',val:2,unid:'mL de 24%',via:'Topico na lingua',freq:'2 min antes do procedimento'}],
+alertas:['Efeitos de doses repetidas em RNPT ainda nao estabelecidos'],
+dil:{apres:'Sweet-Ease 24% (15 mL)',alvo:240,diluente:'Oral direto',vol_final:0,unit:'mg',nota:'24% = 240 mg/mL. Aplicar na lingua com seringa 2 min antes do procedimento.'},
+ref:'NeoFax Nov. 2024 -- Sucrose'},
+
+{id:'imunoglobulina',nome:'Imunoglobulina IV (IVIG)',cat:'other',indicacao:'Doenca hemolitica isoimune; trombocitopenia aloimune neonatal',
+prep:'Concentracoes variadas. Infundir lentamente.',
+doses:[
+{label:'Doenca hemolitica isoimune',val:'0,5-1',unid:'g/kg/dose',via:'IV (2h)',freq:'pode repetir em 12h'},
+{label:'Trombocitopenia aloimune neonatal',val:1,unid:'g/kg/dia',via:'IV',freq:'x 2 dias'}],
+alertas:['Risco de ECN em RN a termo e pre-termo tardio com ictericia hemolitica'],
+dil:{apres:'IVIG 5-10% (50-100 mg/mL) - varias marcas',alvo:50,diluente:'Premix ou diluir conforme bula',vol_final:0,unit:'mg',nota:'Concentracao varia por fabricante. Infundir lentamente (0,5-1 mL/kg/h inicial). Volume = dose(mg)/conc(mg/mL).'},
+ref:'NeoFax Nov. 2024 -- Immune Globulin (Human)'},
+
+{id:'protamina',nome:'Protamina',cat:'other',indicacao:'Reversao de anticoagulacao por heparina',
+prep:'10 mg/mL preservativo-free. Max 5 mg/min.',
+doses:[
+{label:'< 30 min desde heparina',val:'1 mg por 100 UI heparina',unid:'mg',via:'IV (<= 5 mg/min)',freq:'dose unica'},
+{label:'30-60 min desde heparina',val:'0,5-0,75 mg por 100 UI',unid:'mg',via:'IV',freq:'dose unica'},
+{label:'> 60 min desde heparina',val:'0,25-0,5 mg por 100 UI',unid:'mg',via:'IV',freq:'dose unica'}],
+alertas:['Hipotensao, bradicardia e edema pulmonar com administracao rapida','Max 50 mg por dose'],
+dil:{apres:'10 mg/mL preservativo-free',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'Usar 10 mg/mL diretamente ou diluir. Max 5 mg/min IV. Max 50 mg/dose.'},
+ref:'NeoFax Nov. 2024 -- Protamine'},
+
+{id:'neostigmina',nome:'Neostigmina',cat:'other',indicacao:'Reversao de bloqueio neuromuscular nao despolarizante; miastenia gravis neonatal',
+prep:'0,5 mg/mL e 1 mg/mL. Usar com atropina.',
+doses:[
+{label:'Reversao BNMD -- IV',val:'0,03-0,07',unid:'mg/kg',via:'IV (>= 1 min)',freq:'dose unica (max 0,07 mg/kg)'},
+{label:'Miastenia gravis -- IM',val:0.1,unid:'mg',via:'IM (30 min antes da alimentacao)',freq:'dose unica; titular'}],
+alertas:['Dar com atropina (bradicardia, hipersecrecao)'],
+dil:{apres:'0,5 mg/mL e 1 mg/mL injetavel',alvo:0.1,diluente:'SF 0,9%',vol_final:5,unit:'mg',nota:'Diluir para 0,1 mg/mL. Usar sempre com atropina (0,01-0,02 mg/kg) pre-dose.'},
+ref:'NeoFax Nov. 2024 -- Neostigmine'},
+];
+
+var catAtual='todos';
+var buscaAtual='';
+var aberto=null;
+
+function selCat(el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  catAtual=el.dataset.c;
+  filtrar();
+}
+function filtrar(){
+  buscaAtual=document.getElementById('busca').value.toLowerCase();
+  renderGrid();
+}
+
+var CAT_NOME={cardio:'Cardiovascular',antibio:'Antibiotico',analg:'Analgesia/Opioide',
+  neuro:'Neurologico',resp:'Respiratorio',gi:'GI/Metab',electro:'Eletrolito',
+  hormon:'Hormonal',antifung:'Antifungico',vit:'Vitamina/Suplem',sedac:'Sedacao',
+  diur:'Diuretico',other:'Outros'};
+
+function renderGrid(){
+  var g=document.getElementById('dgrid');
+  var vis=DRUGS.filter(function(d){
+    var cm=catAtual==='todos'||d.cat===catAtual;
+    var bm=!buscaAtual||d.nome.toLowerCase().indexOf(buscaAtual)>=0||d.indicacao.toLowerCase().indexOf(buscaAtual)>=0;
+    return cm&&bm;
+  });
+  if(!vis.length){
+    g.innerHTML='<div class="empty"><div class="big">&#128269;</div><p>Nenhum medicamento encontrado.</p></div>';
+    return;
+  }
+  var html=[];
+  vis.forEach(function(d){
+    var isOpen=(aberto===d.id);
+    var h=[];
+    h.push('<div class="dc'+(isOpen?' open':'')+'" id="dc-'+d.id+'">');
+    h.push('<div class="dch" data-did="'+d.id+'" style="cursor:pointer">');
+    h.push('<div><div class="dn">'+d.nome+'</div>');
+    h.push('<div class="di">'+d.indicacao+'</div></div>');
+    h.push('<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">');
+    h.push('<span class="dcat c-'+d.cat+'">'+(CAT_NOME[d.cat]||d.cat)+'</span>');
+    h.push('<span style="font-size:12px;color:var(--ink3)">'+(isOpen?'&#9650;':'&#9660;')+'</span>');
+    h.push('</div></div>');
+    h.push('<div class="dd'+(isOpen?' open':'')+'" id="dd-'+d.id+'" data-id="'+d.id+'">');
+    h.push(renderDetalhe(d));
+    h.push('</div></div>');
+    html.push(h.join(''));
+  });
+  g.innerHTML=html.join('');
+}
+
+
+function toggle(id){
+  aberto=(aberto===id)?null:id;
+  renderGrid();
+  if(aberto){setTimeout(function(){
+    var el=document.getElementById('dc-'+id);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },50);}
+}
+
+function recalc(){
+  document.querySelectorAll('.dd.open').forEach(function(el){
+    var id=el.dataset.id;
+    var d=DRUGS.find(function(x){return x.id===id;});
+    if(d)el.innerHTML=renderDetalhe(d);
+  });
+}
+
+function renderDetalhe(d){
+  var hasPt=P.wk!=null;
+  var h='';
+  if(d.kids){h+='<div class="kids-badge">&#9888;&#65039; <strong>KIDs List:</strong> '+d.kids+'</div>';}
+  if(!hasPt){h+='<div class="no-pt">Preencha o <strong>peso do paciente</strong> para calcular as doses.</div>';}
+  if(d.alertas&&d.alertas.length){
+    d.alertas.forEach(function(a){
+      var cls=a.indexOf('!')>=0?'alert-b':'warn-b';
+      h+='<div class="'+cls+'"><span>&#9888;&#65039;</span><span>'+a+'</span></div>';
+    });
+  }
+  if(d.prep){h+='<div class="ib-l">Apresentacao e preparo</div><div class="prep-b">'+d.prep+'</div>';}
+  if(d.infusao&&hasPt){
+    h+='<div class="inf-box"><div class="box-t">&#9881;&#65039; Preparo da Infusao Continua -- Peso: '+P.wg+'g ('+P.wk.toFixed(3)+'kg)</div>'
+      +'<div class="inf-line">'+d.infusao.regra;
+    if(d.infusao.calcVal){
+      var mg=(P.wk*d.infusao.calcVal).toFixed(2);
+      h+='<br><strong>-> '+P.wk.toFixed(3)+'kg x '+d.infusao.calcVal+' mg = '+mg+' mg em 100 mL</strong><br>1 mL/h = 1 mcg/kg/min';
+    }
+    h+='</div></div>';
+  }
+  // ---- DILUIÇÃO CALCULADA ----
+  if(d.dil&&hasPt){
+    var dil=d.dil;
+    var dh='';
+    dh+='<div class="dil-box"><div class="box-t">&#9881; Diluicao e Preparo &mdash; Peso: '+P.wg+'g ('+P.wk.toFixed(3)+'kg)</div>';
+    dh+='<div class="ib" style="color:#166534;margin-bottom:6px">'+dil.apres+'</div>';
+
+    if(dil.nota){
+      dh+='<div class="dil-step">'+dil.nota+'</div>';
+    }
+
+    // For continuous infusions using Regra dos 6
+    if(dil.infusao_continua&&d.infusao&&d.infusao.calcVal){
+      var mg6=(P.wk*d.infusao.calcVal).toFixed(2);
+      dh+='<div class="dil-step" style="margin-top:6px">&#128197; <strong>Infusao Continua (Regra dos 6):</strong><br>';
+      dh+=P.wk.toFixed(3)+' kg &times; '+d.infusao.calcVal+' mg = <strong>'+mg6+' mg</strong> em 100 mL &rarr; 1 mL/h = 1 mcg/kg/min</div>';
+    }
+
+    // Bolus dose calculations: for each dose, compute volume
+    if(dil.alvo&&dil.alvo>0){
+      var dosesComCalc=d.doses.filter(function(dose){
+        if(!dose.val||typeof dose.val!=='number') return false;
+        if(dil.infusao_continua) return false; // handled above
+        var u=dose.unid.toLowerCase();
+        return (u.indexOf('mg/kg')>=0&&u.indexOf('/dia')<0&&u.indexOf('/min')<0&&u.indexOf('/h')<0)
+          ||(u.indexOf('mcg/kg')>=0&&u.indexOf('/min')<0&&u.indexOf('/h')<0)
+          ||(u.indexOf('ml/kg')>=0)
+          ||(u.indexOf('ui/kg')>=0)
+          ||(u.indexOf('mg/m2')>=0||u.indexOf('mg/m²')>=0);
+      });
+      if(dosesComCalc.length){
+        dh+='<div class="dil-row" style="margin-top:8px">';
+        dosesComCalc.forEach(function(dose){
+          var u=dose.unid.toLowerCase();
+          var doseMg=null;
+          var doseUnit='';
+          if(u.indexOf('mcg/kg')>=0&&u.indexOf('/min')<0&&u.indexOf('/h')<0){
+            doseMg=dose.val*P.wk; doseUnit='mcg';
+          } else if(u.indexOf('mg/kg')>=0&&u.indexOf('/dia')<0&&u.indexOf('/min')<0&&u.indexOf('/h')<0){
+            doseMg=dose.val*P.wk; doseUnit='mg';
+          } else if(u.indexOf('ui/kg')>=0){
+            doseMg=dose.val*P.wk; doseUnit='UI';
+          } else if(u.indexOf('ml/kg')>=0){
+            doseMg=dose.val*P.wk; doseUnit='mL'; // volume direto
+          } else if((u.indexOf('mg/m2')>=0||u.indexOf('mg/m²')>=0)&&P.sc){
+            doseMg=dose.val*P.sc; doseUnit='mg';
+          }
+          if(doseMg===null) return;
+          if(doseUnit==='mL'){
+            dh+='<div class="dil-item"><div class="dil-val">'+doseMg.toFixed(2)+' mL</div>';
+            dh+='<div class="dil-lbl">'+dose.label+'</div></div>';
+          } else {
+            // Convert dose to volume based on alvo concentration
+            var alvo=dil.alvo;
+            // If unit mismatch (dose in mcg, alvo in mg), convert
+            var doseInAlvoUnit=doseMg;
+            if(doseUnit==='mcg'&&dil.unit==='mg') doseInAlvoUnit=doseMg/1000;
+            if(doseUnit==='mg'&&dil.unit==='mcg') doseInAlvoUnit=doseMg*1000;
+            var vol=doseInAlvoUnit/alvo;
+            var maxAbs=dose.maxAbs;
+            var doseFinal=maxAbs&&doseMg>maxAbs?maxAbs:doseMg;
+            if(maxAbs&&doseMg>maxAbs){doseInAlvoUnit=maxAbs; if(doseUnit==='mcg'&&dil.unit==='mg')doseInAlvoUnit=maxAbs/1000; vol=doseInAlvoUnit/alvo;}
+            dh+='<div class="dil-item">';
+            dh+='<div class="dil-val">'+vol.toFixed(3)+' mL</div>';
+            dh+='<div class="dil-lbl">'+dose.label+'<br>('+(maxAbs&&doseMg>maxAbs?maxAbs.toFixed(2):doseMg.toFixed(3))+' '+doseUnit+' &divide; '+alvo+' '+dil.unit+'/mL)</div>';
+            dh+='</div>';
+          }
+        });
+        dh+='</div>';
+      }
+    }
+
+    // For range doses (string val like '2-5'), show mL/h range for infusions
+    if(dil.infusao_continua){
+      var rangeDoses=d.doses.filter(function(dose){
+        return typeof dose.val==='string'&&dose.val.indexOf('-')>=0;
+      });
+      if(rangeDoses.length){
+        dh+='<div style="margin-top:8px">';
+        rangeDoses.forEach(function(dose){
+          var u=dose.unid.toLowerCase();
+          var pts=dose.val.split('-').map(Number);
+          if(isNaN(pts[0])||isNaN(pts[1])) return;
+          var isMcgKgMin=u.indexOf('mcg/kg/min')>=0;
+          var isMcgKgH=u.indexOf('mcg/kg/h')>=0;
+          var isMgKgH=u.indexOf('mg/kg/h')>=0;
+          var isMgKgMin=u.indexOf('mg/kg/min')>=0;
+          if(isMcgKgMin||isMcgKgH||isMgKgH||isMgKgMin){
+            // With Regra dos 6 (calcVal=6): 1 mL/h = 1 mcg/kg/min
+            // mL/h = dose(mcg/kg/min) x 1 (when Regra dos 6 applied)
+            var factor=1; // Regra dos 6: 1 mL/h = 1 mcg/kg/min
+            if(d.infusao&&d.infusao.calcVal){
+              // mL/h directly equals mcg/kg/min
+              var loMl=pts[0].toFixed(1);
+              var hiMl=pts[1].toFixed(1);
+              dh+='<div class="dil-step">&#128197; <strong>'+dose.label+':</strong> ';
+              dh+=pts[0]+'-'+pts[1]+' mcg/kg/min = <strong>'+loMl+'-'+hiMl+' mL/h</strong></div>';
+            } else if(isMcgKgH){
+              var loH=(pts[0]*P.wk).toFixed(2);
+              var hiH=(pts[1]*P.wk).toFixed(2);
+              dh+='<div class="dil-step">&#128197; <strong>'+dose.label+':</strong> ';
+              dh+=pts[0]+'-'+pts[1]+' mcg/kg/h &rarr; <strong>'+loH+'-'+hiH+' mcg/h</strong></div>';
+            }
+          }
+        });
+        dh+='</div>';
+      }
+    }
+
+    dh+='</div>';
+    h+=dh;
+  }
+  // ---- FIM DILUIÇÃO ----
+
+  h+='<div class="ib-l" style="margin-bottom:6px">Doses</div>';
+  d.doses.forEach(function(dose){
+    if(!dose.unid||dose.val===null){
+      h+='<div class="box"><div class="box-t">'+dose.label+'</div>'
+        +'<div class="dose-l" style="color:var(--ink2)">'+(dose.unid||'--')+'</div>'
+        +(dose.via?'<div class="dose-c">'+dose.via+(dose.freq?' &middot; '+dose.freq:'')+'</div>':'')
+        +(dose.obs?'<div class="dose-c" style="color:var(--amber);margin-top:4px">&#8505;&#65039; '+dose.obs+'</div>':'')
+        +'</div>';
+      return;
+    }
+    var calcH='';
+    if(hasPt&&typeof dose.val==='number'){
+      var calc=null;
+      var u=dose.unid.toLowerCase();
+      if(u.indexOf('mcg/kg')>=0&&u.indexOf('/min')<0&&u.indexOf('/h')<0){
+        calc=(dose.val*P.wk).toFixed(2)+' mcg';
+      } else if(u.indexOf('mg/kg')>=0&&u.indexOf('/dia')<0&&u.indexOf('/min')<0&&u.indexOf('/h')<0){
+        var raw=dose.val*P.wk;
+        calc=raw.toFixed(raw<1?3:2)+' mg';
+        if(dose.maxAbs&&raw>dose.maxAbs)calc+=' <span style="color:var(--red)">(&#9888; limitar a '+dose.maxAbs+' '+(dose.unidMax||'mg')+')</span>';
+      } else if((u.indexOf('mg/m2')>=0||u.indexOf('mg/m²')>=0)&&P.sc){
+        calc=(dose.val*P.sc).toFixed(2)+' mg <span style="font-size:.68rem;color:var(--ink3)">(SC '+P.sc.toFixed(3)+')</span>';
+      } else if(u.indexOf('ui/kg')>=0){
+        calc=Math.round(dose.val*P.wk)+' UI';
+      } else if(u.indexOf('ml/kg')>=0){
+        calc=(dose.val*P.wk).toFixed(2)+' mL';
+      } else if(u.indexOf('mg/kg/dia')>=0){
+        calc=(dose.val*P.wk).toFixed(2)+' mg/dia';
+      } else if(u.indexOf('mcg/kg/dia')>=0){
+        calc=(dose.val*P.wk).toFixed(1)+' mcg/dia';
+      } else if(u.indexOf('g/kg')>=0){
+        calc=(dose.val*P.wk).toFixed(3)+' g';
+      }
+      if(calc){
+        calcH='<div class="dose-sep"></div><div>'
+          +'<div class="dose-calc">'+calc+'</div>'
+          +'<div class="dose-c">para '+P.wk.toFixed(3)+' kg</div></div>';
+      }
+    } else if(hasPt&&typeof dose.val==='string'&&dose.val.indexOf('-')>=0){
+      var pts=dose.val.split('-').map(Number);
+      var u2=dose.unid.toLowerCase();
+      if(!isNaN(pts[0])&&!isNaN(pts[1])){
+        var factor=0;
+        if(u2.indexOf('mcg/kg')>=0&&u2.indexOf('/min')<0&&u2.indexOf('/h')<0)factor=P.wk;
+        else if(u2.indexOf('mg/kg')>=0&&u2.indexOf('/dia')<0&&u2.indexOf('/min')<0&&u2.indexOf('/h')<0)factor=P.wk;
+        else if(u2.indexOf('ml/kg')>=0)factor=P.wk;
+        else if((u2.indexOf('mg/m2')>=0||u2.indexOf('mg/m\u00b2')>=0)&&P.sc)factor=P.sc;
+        if(factor){
+          var lo=(pts[0]*factor).toFixed(2);
+          var hi=(pts[1]*factor).toFixed(2);
+          var uBase=dose.unid.replace('/kg','').replace('/kg/dose','').replace('/m2','').replace('/m\u00b2','');
+          calcH='<div class="dose-sep"></div><div>'
+            +'<div class="dose-calc">'+lo+'-'+hi+' '+uBase+'</div>'
+            +'<div class="dose-c">para '+(u2.indexOf('m2')>=0||u2.indexOf('m\u00b2')>=0?'SC '+P.sc.toFixed(3)+' m\u00b2':'peso '+P.wk.toFixed(3)+' kg')+'</div></div>';
+        }
+      }
+    }
+    h+='<div class="box"><div class="box-t">'+dose.label+'</div>'
+      +'<div class="dose-row"><div>'
+      +'<div class="dose-l">'+dose.val+' '+dose.unid+'</div>'
+      +'<div class="dose-c">'+dose.via+(dose.freq?' &middot; '+dose.freq:'')+'</div></div>'
+      +calcH+'</div>'
+      +(dose.obs?'<div class="dose-c" style="color:var(--amber);margin-top:5px">&#8505;&#65039; '+dose.obs+'</div>':'')
+      +'</div>';
+  });
+  if(d.monit){h+='<div class="ib-l" style="margin-top:8px">Monitorizacao</div><div class="ib" style="color:var(--ink2)">'+d.monit+'</div>';}
+  if(d.ref){h+='<div class="ref">&#128218; '+d.ref+'</div>';}
+  return h;
+}
+
+renderGrid();
+
+document.getElementById('dgrid').addEventListener('click',function(e){
+  var h=e.target.closest('[data-did]');
+  if(h){toggle(h.getAttribute('data-did'));}
+});
+</script>
+</body>
+</html>
