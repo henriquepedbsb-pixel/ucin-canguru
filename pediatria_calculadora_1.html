@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Pediátrica — Doses por Peso e Faixa Etária</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0c1a28;--ink2:#2d3e50;--ink3:#6b7f90;--paper:#f4f1ec;--paper2:#e9e5de;--white:#ffffff;--accent:#1a5276;--accent2:#2980b9;--accent-lt:#d6eaf8;--green:#1a6b3c;--green-lt:#e9f7ef;--red:#c0392b;--red-lt:#fdf0ef;--amber:#935116;--amber-lt:#fef5e7;--purple:#5b2c8d;--purple-lt:#f0e6ff;--teal:#0e6655;--teal-lt:#e0f5f0;--border:#ccc8be;--mono:"IBM Plex Mono",monospace;--sans:"IBM Plex Sans",system-ui,sans-serif;--shadow:0 1px 6px rgba(12,26,40,.10)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh}
+.hdr{background:linear-gradient(135deg,#1a3a5c,#2471a3);color:#fff;padding:12px 20px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.hdr-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hdr h1{font-family:var(--mono);font-size:1rem;font-weight:500}
+.hdr span{font-size:.72rem;opacity:.65;display:block;margin-top:1px}
+.hdr-badge{background:rgba(255,255,255,.15);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:.7rem;white-space:nowrap}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 12px 60px;display:grid;grid-template-columns:310px 1fr;gap:16px;align-items:start}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.ch{background:var(--paper2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px}
+.ch h2{font-size:.75rem;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)}
+.cb{padding:16px}
+.panel-sticky{position:sticky;top:60px;max-height:calc(100vh - 70px);overflow-y:auto}
+@media(max-width:800px){.panel-sticky{position:static}}
+.pt-badge{background:linear-gradient(135deg,#1a3a5c,#2471a3);color:#fff;border-radius:8px;padding:14px;margin-bottom:14px;font-family:var(--mono)}
+.pt-name{font-size:.9rem;font-weight:500;border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:8px;margin-bottom:10px}
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pt-stat .val{font-size:1.05rem;font-weight:500}
+.pt-stat .lbl{font-size:.62rem;opacity:.7;margin-top:1px}
+.age-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:500;margin-top:8px;font-family:var(--mono)}
+.tag-neo{background:#fef3c7;color:#92400e}
+.tag-lac{background:#dbeafe;color:#1e3a5f}
+.tag-cr1{background:#dcfce7;color:#14532d}
+.tag-cr2{background:#ede9fe;color:#4c1d95}
+.tag-adol{background:#fce7f3;color:#831843}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.72rem;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.unit{font-weight:400;color:var(--ink3);font-family:var(--mono);font-size:.68rem}
+.field input,.field select{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:.84rem;background:#fafaf8;color:var(--ink);transition:border-color .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(41,128,185,.14)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.btn-clr{width:100%;padding:7px;border-radius:6px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.78rem;font-weight:500;cursor:pointer;margin-top:4px}
+.btn-clr:hover{background:var(--red-lt)}
+.srch{position:relative;margin-bottom:12px}
+.srch input{width:100%;padding:8px 12px 8px 32px;border:1.5px solid var(--border);border-radius:7px;font-size:.84rem;background:#fafaf8}
+.srch input:focus{outline:none;border-color:var(--accent2)}
+.srch-ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--ink3)}
+.tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.tab{padding:3px 11px;border-radius:20px;font-size:.7rem;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);transition:all .12s}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab:hover:not(.on){border-color:var(--accent2);color:var(--accent)}
+.dgrid{display:flex;flex-direction:column;gap:8px}
+.dc{border:1.5px solid var(--border);border-radius:9px;background:var(--white);overflow:hidden;transition:box-shadow .12s,border-color .12s}
+.dc:hover{border-color:var(--accent2);box-shadow:var(--shadow)}
+.dc.open{border-color:var(--accent);background:var(--accent-lt)}
+.dch{padding:9px 13px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;cursor:pointer}
+.dn{font-weight:600;font-size:.86rem;color:var(--ink)}
+.di{font-size:.7rem;color:var(--ink3);margin-top:2px}
+.dcat{font-size:.65rem;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:1px}
+.c-antipir{background:#fee2e2;color:#991b1b}
+.c-antibio{background:#d1fae5;color:#065f46}
+.c-resp{background:#dbeafe;color:#1e40af}
+.c-gi{background:#fce7f3;color:#9d174d}
+.c-neuro{background:#fef9c3;color:#713f12}
+.c-analg{background:#ede9fe;color:#5b21b6}
+.c-cardio{background:#ffe4e6;color:#9f1239}
+.c-diur{background:#e0f2fe;color:#075985}
+.c-derma{background:#fef3c7;color:#92400e}
+.c-outros{background:#f3f4f6;color:#374151}
+.dd{display:none;padding:13px;border-top:1px solid var(--border);background:#f9f8f5}
+.dd.open{display:block;animation:sl .15s ease}
+@keyframes sl{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.box{background:var(--white);border:1.5px solid var(--accent2);border-radius:7px;padding:11px 13px;margin-bottom:8px}
+.box-t{font-family:var(--mono);font-size:.63rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.dose-l{font-family:var(--mono);font-size:.96rem;font-weight:500;color:var(--accent)}
+.dose-c{font-family:var(--mono);font-size:.73rem;color:var(--ink3)}
+.dose-calc{font-family:var(--mono);font-size:.92rem;font-weight:500;color:var(--green)}
+.dose-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start}
+.dose-sep{width:2px;background:var(--accent-lt);border-radius:2px;align-self:stretch;flex-shrink:0}
+.warn-b{padding:7px 10px;border-radius:6px;font-size:.73rem;margin-bottom:7px;display:flex;gap:7px;background:var(--amber-lt);border:1px solid #fcd34d;color:var(--amber)}
+.alert-b{padding:7px 10px;border-radius:6px;font-size:.73rem;margin-bottom:7px;display:flex;gap:7px;background:var(--red-lt);border:1px solid #fca5a5;color:var(--red)}
+.info-b{padding:7px 10px;border-radius:6px;font-size:.73rem;margin-bottom:7px;display:flex;gap:7px;background:var(--accent-lt);border:1px solid #90cdf4;color:var(--accent)}
+.prep-b{background:#f0f4ff;border:1px solid #bfcfee;border-radius:6px;padding:8px 10px;font-size:.73rem;color:#1e3a6e;margin-bottom:8px}
+.dil-box{background:#f0fdf4;border:1.5px solid #86efac;border-radius:7px;padding:11px 13px;margin-bottom:8px}
+.dil-box .box-t{color:#166534}
+.dil-val{font-family:var(--mono);font-size:.92rem;font-weight:600;color:#15803d}
+.dil-lbl{font-size:.63rem;color:#166534;text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.dil-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.dil-item{min-width:110px}
+.dil-step{font-family:var(--mono);font-size:.75rem;color:#166534;margin-top:6px;line-height:1.6;background:#dcfce7;border-radius:5px;padding:6px 9px}
+.maxdose{color:var(--red);font-size:.68rem;margin-top:2px;font-family:var(--mono)}
+.ref{font-size:.64rem;color:var(--ink3);font-family:var(--mono);margin-top:8px}
+.no-pt{background:var(--amber-lt);border:1.5px dashed #fbbf24;border-radius:8px;padding:18px;text-align:center;color:var(--amber);font-size:.8rem;margin-bottom:10px}
+.empty{text-align:center;padding:40px;color:var(--ink3)}
+.disc{max-width:1180px;margin:0 auto;padding:0 12px 24px;font-size:.7rem;color:var(--ink3);text-align:center;line-height:1.6}
+.faixa-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.62rem;font-weight:500;margin-right:4px;vertical-align:middle}
+.fb-neo{background:#fef3c7;color:#92400e}
+.fb-lac{background:#dbeafe;color:#1e3a5f}
+.fb-cr1{background:#dcfce7;color:#14532d}
+.fb-cr2{background:#ede9fe;color:#4c1d95}
+.fb-adol{background:#fce7f3;color:#831843}
+.fb-all{background:#f1f5f9;color:#334155}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-inner">
+    <div>
+      <h1>&#128138; Calculadora Pediátrica</h1>
+      <span>Doses por peso e faixa etária · Harriet Lane 23ª ed. 2024 · Taketomo 31ª ed. 2024</span>
+    </div>
+    <div class="hdr-badge" id="drug-count">carregando...</div>
+  </div>
+</header>
+<div class="wrap">
+<aside class="panel-sticky">
+  <div class="card">
+    <div class="ch"><span>&#128118;</span><h2>Dados do Paciente</h2></div>
+    <div class="cb">
+      <div id="pt-badge" class="pt-badge" style="display:none">
+        <div class="pt-name" id="bd-n">—</div>
+        <div class="pt-grid">
+          <div class="pt-stat"><div class="val" id="bd-w">—</div><div class="lbl">PESO (kg)</div></div>
+          <div class="pt-stat"><div class="val" id="bd-age">—</div><div class="lbl">IDADE</div></div>
+          <div class="pt-stat"><div class="val" id="bd-sc">—</div><div class="lbl">SC (m²) *auto</div></div>
+          <div class="pt-stat"><div class="val" id="bd-imc">—</div><div class="lbl">IMC</div></div>
+        </div>
+        <div style="margin-top:8px;text-align:center"><span class="age-tag" id="bd-cat">—</span></div>
+      </div>
+      <div class="field"><label>Nome / Leito</label><input id="nome" type="text" placeholder="Ex: João · Leito 3" oninput="atualizar()"></div>
+      <div class="f2">
+        <div class="field"><label>Peso <span class="unit">kg</span></label><input id="peso" type="number" min="0.5" max="100" step="0.1" placeholder="15" oninput="atualizar()"></div>
+        <div class="field"><label>Altura <span class="unit">cm</span></label><input id="altura" type="number" min="30" max="200" step="1" placeholder="100" oninput="atualizar()"></div>
+      </div>
+      <div class="field"><label>SC <span class="unit">m² (Mosteller — auto)</span></label><input id="sc" type="number" min="0.1" max="2.5" step="0.01" placeholder="calculada" oninput="atualizar()"></div>
+      <div class="f3">
+        <div class="field"><label>Idade <span class="unit">anos</span></label><input id="id-anos" type="number" min="0" max="18" step="1" placeholder="5" oninput="atualizar()"></div>
+        <div class="field"><label><span class="unit">meses</span></label><input id="id-meses" type="number" min="0" max="11" step="1" placeholder="0" oninput="atualizar()"></div>
+        <div class="field"><label><span class="unit">dias</span></label><input id="id-dias" type="number" min="0" max="30" step="1" placeholder="0" oninput="atualizar()"></div>
+      </div>
+      <button class="btn-clr" onclick="limpar()">&#128465; Limpar dados</button>
+    </div>
+  </div>
+</aside>
+<main>
+  <div class="card">
+    <div class="ch"><span>&#128203;</span><h2>Medicamentos Pediátricos</h2></div>
+    <div class="cb">
+      <div class="srch"><span class="srch-ic">&#128269;</span><input id="busca" type="text" placeholder="Buscar medicamento ou indicação..." oninput="filtrar()"></div>
+      <div class="tabs" id="tabs">
+        <span class="tab on" data-c="todos" onclick="selCat(this)">Todos</span>
+        <span class="tab" data-c="antipir" onclick="selCat(this)">Analgesia / Antitérmico</span>
+        <span class="tab" data-c="antibio" onclick="selCat(this)">Antibióticos</span>
+        <span class="tab" data-c="resp" onclick="selCat(this)">Respiratório</span>
+        <span class="tab" data-c="neuro" onclick="selCat(this)">Neurológico</span>
+        <span class="tab" data-c="gi" onclick="selCat(this)">GI / Metabólico</span>
+        <span class="tab" data-c="analg" onclick="selCat(this)">Sedação / Analgesia IV</span>
+        <span class="tab" data-c="cardio" onclick="selCat(this)">Cardiovascular</span>
+        <span class="tab" data-c="diur" onclick="selCat(this)">Diuréticos</span>
+        <span class="tab" data-c="derma" onclick="selCat(this)">Dermatológico</span>
+        <span class="tab" data-c="outros" onclick="selCat(this)">Outros</span>
+      </div>
+      <div class="dgrid" id="dgrid"></div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="disc">⚠️ <strong>Uso exclusivo de profissionais de saúde.</strong> Confirme sempre as doses com o Harriet Lane Handbook 23ª ed. (2024) e Taketomo 31ª ed. (2024). Não substitui julgamento clínico. Doses máximas absolutas sempre respeitadas nos cálculos.</div>
+<script>
+var P={};
+function calcSC(kg,cm){
+  if(kg&&cm) return +((Math.sqrt(kg*cm/3600)).toFixed(2));
+  if(kg) return +((0.1*Math.pow(kg,0.6723)).toFixed(2));
+  return null;
+}
+function idadeTotal(anos,meses,dias){
+  return (anos||0)*365+(meses||0)*30+(dias||0);
+}
+function faixaEtaria(totalDias){
+  if(totalDias<28) return {label:'Neonato (0-28d)',cls:'tag-neo',id:'neo'};
+  if(totalDias<365) return {label:'Lactente (1-12m)',cls:'tag-lac',id:'lac'};
+  if(totalDias<5*365) return {label:'Criança 1-5a',cls:'tag-cr1',id:'cr1'};
+  if(totalDias<12*365) return {label:'Criança 6-11a',cls:'tag-cr2',id:'cr2'};
+  return {label:'Adolescente 12-18a',cls:'tag-adol',id:'adol'};
+}
+function calcIMC(kg,cm){
+  if(!kg||!cm) return null;
+  return (kg/((cm/100)*(cm/100))).toFixed(1);
+}
+function atualizar(){
+  var kg=parseFloat(document.getElementById('peso').value)||null;
+  var cm=parseFloat(document.getElementById('altura').value)||null;
+  var anos=parseInt(document.getElementById('id-anos').value)||0;
+  var meses=parseInt(document.getElementById('id-meses').value)||0;
+  var dias=parseInt(document.getElementById('id-dias').value)||0;
+  var nome=document.getElementById('nome').value;
+  var sc_manual=parseFloat(document.getElementById('sc').value)||null;
+  if(!kg){P={};document.getElementById('pt-badge').style.display='none';recalc();return;}
+  var sc=sc_manual||calcSC(kg,cm);
+  var totalDias=idadeTotal(anos,meses,dias);
+  var fx=faixaEtaria(totalDias);
+  var imc=calcIMC(kg,cm);
+  var ageStr=anos>0?(anos+'a '+(meses>0?meses+'m':'')):meses>0?(meses+'m '+(dias>0?dias+'d':'')):dias+'d';
+  P={kg:kg,cm:cm,sc:sc,sc_manual:sc_manual,anos:anos,meses:meses,dias:dias,totalDias:totalDias,fx:fx,imc:imc,nome:nome,ageStr:ageStr.trim()};
+  document.getElementById('pt-badge').style.display='block';
+  document.getElementById('bd-n').textContent=nome||'Paciente';
+  document.getElementById('bd-w').textContent=kg;
+  document.getElementById('bd-age').textContent=ageStr||'—';
+  document.getElementById('bd-sc').textContent=sc?(sc+(sc_manual?'':' *')):'—';
+  document.getElementById('bd-imc').textContent=imc||'—';
+  var cat=document.getElementById('bd-cat');
+  cat.textContent=fx.label; cat.className='age-tag '+fx.cls;
+  recalc();
+}
+function limpar(){
+  ['nome','peso','altura','sc','id-anos','id-meses','id-dias'].forEach(function(id){document.getElementById(id).value='';});
+  P={};document.getElementById('pt-badge').style.display='none';recalc();
+}
+var catAtual='todos';var buscaAtual='';var aberto=null;
+function selCat(el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});el.classList.add('on');catAtual=el.dataset.c;filtrar();}
+function filtrar(){buscaAtual=document.getElementById('busca').value.toLowerCase();renderGrid();}
+var CAT_NOME={antipir:'Analgesia/Antitérmico',antibio:'Antibiótico',resp:'Respiratório',neuro:'Neurológico',gi:'GI/Metabólico',analg:'Sedação/Analgesia IV',cardio:'Cardiovascular',diur:'Diurético',derma:'Dermatológico',outros:'Outros'};
+
+var DRUGS=[
+{id:'paracetamol',nome:'Paracetamol (Acetaminofeno)',cat:'antipir',
+indicacao:'Febre e dor leve-moderada',
+prep:'Sol oral 200 mg/mL; comp 500/750 mg; IV 10 mg/mL (Paracetamol IV).',
+doses:[
+{label:'VO/Retal — todas faixas',val:10,unid:'mg/kg/dose',via:'VO ou Retal',freq:'4/4h a 6/6h',maxAbs:75,unidMax:'mg/kg/dia — máx absoluto 4000 mg/dia adulto; 2400 mg/dia crianças'},
+{label:'IV — > 10 kg',val:15,unid:'mg/kg/dose',via:'IV (15 min)',freq:'6/6h',maxAbs:60,unidMax:'mg/kg/dia (máx 4 g/dia)'},
+{label:'IV — < 10 kg',val:7.5,unid:'mg/kg/dose',via:'IV (15 min)',freq:'6/6h',maxAbs:30,unidMax:'mg/kg/dia'},
+],
+alertas:['Dose máxima diária: 75 mg/kg/dia VO ou 60 mg/kg/dia IV — nunca ultrapassar','Hepatotoxicidade grave com superdosagem — atenção ao uso conjunto com outros produtos contendo paracetamol','Neonatos: clearance reduzido — usar 10-15 mg/kg/dose 6-8/6-8h'],
+dil:{apres:'Sol oral 200 mg/mL; comp 500 mg; IV 10 mg/mL frasco 50/100 mL',alvo:200,diluente:'Oral: sem diluição. IV: pronto para uso (10 mg/mL)',vol_final:0,unit:'mg',nota:'VO: vol(mL) = dose(mg)/200. IV premix 10 mg/mL: vol(mL) = dose(mg)/10. Infundir em 15 min.'},
+ref:'Harriet Lane 23ª ed. 2024 — Acetaminophen; Taketomo 31ª ed. 2024'},
+
+{id:'dipirona',nome:'Dipirona (Metamizol)',cat:'antipir',
+indicacao:'Febre e dor — uso predominante no Brasil',
+prep:'Sol oral 500 mg/mL (gotas); amp 500 mg/mL.',
+doses:[
+{label:'VO — gotas (500 mg/mL)',val:10,unid:'mg/kg/dose',via:'VO',freq:'4/4h a 6/6h',maxAbs:1000,unidMax:'mg/dose'},
+{label:'IV/IM — > 3 meses',val:15,unid:'mg/kg/dose',via:'IV lento (5 min) ou IM',freq:'6/6h',maxAbs:1000,unidMax:'mg/dose'},
+],
+alertas:['Agranulocitose rara mas grave — orientar sobre febre, úlceras orais','Não usar em < 3 meses de vida','Hipotensão com IV rápido — infundir lentamente','Não disponível em vários países (EUA, Reino Unido)'],
+dil:{apres:'500 mg/mL (gotas e ampola)',alvo:500,diluente:'SF 0,9% ou SG 5% (IV)',vol_final:0,unit:'mg',nota:'VO gotas: 1 gota = 25 mg (10 gotas = 250 mg). IV: diluir dose em 10-20 mL SF, infundir em 5-15 min.'},
+ref:'SBP — Departamento de Farmacologia; Taketomo 31ª ed. 2024 — Metamizole'},
+
+{id:'ibuprofeno',nome:'Ibuprofeno',cat:'antipir',
+indicacao:'Febre, dor, inflamação; artrite; fechar CAP (neonatal)',
+prep:'Suspensão 50 mg/mL (100 mg/5 mL); comp 200/400/600 mg.',
+doses:[
+{label:'Antitérmico/Analgésico VO — > 6 meses',val:10,unid:'mg/kg/dose',via:'VO',freq:'6/6h a 8/8h',maxAbs:400,unidMax:'mg/dose (máx 40 mg/kg/dia)'},
+{label:'Anti-inflamatório VO',val:10,unid:'mg/kg/dose',via:'VO',freq:'8/8h',maxAbs:800,unidMax:'mg/dose (máx 2400 mg/dia)'},
+{label:'Artrite reumatoide juvenil',val:40,unid:'mg/kg/dia',via:'VO',freq:'dividir 3-4x/dia',maxAbs:2400,unidMax:'mg/dia'},
+],
+alertas:['Não usar < 6 meses de vida','Contraindicado: desidratação, insuficiência renal, úlcera, sangramento','Não combinar com outros AINEs','Reduz efeito de anti-hipertensivos'],
+dil:{apres:'Suspensão 100 mg/5 mL; comp 200/400/600 mg',alvo:20,diluente:'Oral — sem diluição',vol_final:0,unit:'mg',nota:'Suspensão 100 mg/5 mL = 20 mg/mL: vol(mL) = dose(mg)/20. Tomar com alimentos.'},
+ref:'Harriet Lane 23ª ed. 2024 — Ibuprofen; Taketomo 31ª ed. 2024'},
+
+{id:'codeina',nome:'Codeína',cat:'antipir',
+indicacao:'Dor moderada (2ª linha); tosse (uso limitado)',
+prep:'Comp 30/60 mg; sol oral 3 mg/mL.',
+doses:[
+{label:'Dor — > 12 anos',val:0.5,unid:'mg/kg/dose',via:'VO',freq:'4/4h a 6/6h',maxAbs:60,unidMax:'mg/dose'},
+],
+alertas:['FDA/ANVISA: NÃO usar em < 12 anos — risco de depressão respiratória grave por metabolizadores ultrarrápidos','Proibida em crianças pós-amigdalectomia/adenoidectomia','Monitorar sedação excessiva'],
+ref:'Harriet Lane 23ª ed. 2024 — Codeine (restrições FDA 2017); Taketomo 31ª ed. 2024'},
+
+{id:'amoxicilina',nome:'Amoxicilina',cat:'antibio',
+indicacao:'Otite média, faringotonsilite, pneumonia leve, infecções de pele',
+prep:'Suspensão 250 mg/5 mL e 500 mg/5 mL; comp/cáps 500/875 mg.',
+doses:[
+{label:'Infecção leve/mod — todas idades',val:25,unid:'mg/kg/dia',via:'VO',freq:'dividir 8/8h (máx 1500 mg/dia)',maxAbs:1500,unidMax:'mg/dia'},
+{label:'Dose alta (OMA, pneumonia, H. pylori)',val:80,unid:'mg/kg/dia',via:'VO',freq:'dividir 8/8h (máx 3000 mg/dia)',maxAbs:3000,unidMax:'mg/dia'},
+{label:'Faringotonsilite — 10 dias',val:50,unid:'mg/kg/dia',via:'VO',freq:'dividir 12/12h (máx 1000 mg/dia)'},
+],
+alertas:['Reação cruzada com penicilina (10% dos alérgicos)','Exantema maculopapular NÃO é alergia verdadeira em maioria','Ajuste em insuficiência renal grave'],
+dil:{apres:'Suspensão 250 mg/5 mL (50 mg/mL) e 500 mg/5 mL (100 mg/mL)',alvo:50,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp 250 mg/5 mL: vol(mL) = dose(mg)/50. Susp 500 mg/5 mL: vol(mL) = dose(mg)/100. Agitar antes de usar.'},
+ref:'Harriet Lane 23ª ed. 2024 — Amoxicillin; Taketomo 31ª ed. 2024'},
+
+{id:'amox_clav',nome:'Amoxicilina + Clavulanato',cat:'antibio',
+indicacao:'OMA resistente, sinusite, pneumonia aspirativa, mordidas, infecções de pele complicadas',
+prep:'Suspensão 400/57 mg/5 mL e 250/62,5 mg/5 mL; comp 875/125 mg.',
+doses:[
+{label:'Dose padrão (em amoxicilina)',val:45,unid:'mg/kg/dia (amox)',via:'VO',freq:'dividir 12/12h',maxAbs:1750,unidMax:'mg/dia (amox)'},
+{label:'Dose alta — OMA resistente, sinusite',val:90,unid:'mg/kg/dia (amox)',via:'VO',freq:'dividir 12/12h',maxAbs:3000,unidMax:'mg/dia (amox)'},
+],
+alertas:['Dose máxima de clavulanato: 10 mg/kg/dia (limita a dose alta)','Diarreia frequente — pode melhorar com probiótico','Hepatotoxicidade rara com uso prolongado'],
+dil:{apres:'Susp 400/57 mg/5 mL (80 mg/mL amox)',alvo:80,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp 400/57: vol(mL) = dose_amox(mg)/80. Agitar bem. Refrigerado após reconstituição (14 dias).'},
+ref:'Harriet Lane 23ª ed. 2024 — Amoxicillin/Clavulanate; Taketomo 31ª ed. 2024'},
+
+{id:'azitromicina_ped',nome:'Azitromicina',cat:'antibio',
+indicacao:'Pneumonia atípica, faringotonsilite (2ª linha), coqueluche, infecção por Chlamydia',
+prep:'Suspensão 600 mg/15 mL (40 mg/mL); comp 500 mg; IV 500 mg po.',
+doses:[
+{label:'Faringotonsilite — 5 dias',val:12,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia x 5 dias (máx 500 mg/dia)',maxAbs:500,unidMax:'mg/dia'},
+{label:'Pneumonia — 5 dias',val:10,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia x 5 dias (máx 500 mg/dia)',maxAbs:500,unidMax:'mg/dia'},
+{label:'Coqueluche',val:10,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia x 5 dias',maxAbs:500,unidMax:'mg/dia'},
+{label:'Otite — dose única',val:30,unid:'mg/kg',via:'VO',freq:'dose única (máx 1500 mg)',maxAbs:1500,unidMax:'mg'},
+],
+alertas:['Monitorar QTc — evitar se QTc prolongado ou com outros medicamentos que prolongam QT','Estenose pilórica em < 2 meses de vida','Interações: antiácidos, varfarina, digoxina'],
+dil:{apres:'Susp 40 mg/mL; comp 500 mg; IV 100 mg/mL reconstituído',alvo:40,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp 40 mg/mL: vol(mL) = dose(mg)/40. IV: reconstituir 500 mg em 4,8 mL → diluir para 1-2 mg/mL; infundir em 60 min.'},
+ref:'Harriet Lane 23ª ed. 2024 — Azithromycin; Taketomo 31ª ed. 2024'},
+
+{id:'cefalexina',nome:'Cefalexina',cat:'antibio',
+indicacao:'Infecções de pele e partes moles, ITU, faringotonsilite (alternativa)',
+prep:'Suspensão 250 mg/5 mL; cáps 500 mg.',
+doses:[
+{label:'Infecção leve/mod',val:25,unid:'mg/kg/dia',via:'VO',freq:'dividir 6/6h (máx 1000 mg/dia)',maxAbs:1000,unidMax:'mg/dia'},
+{label:'Infecção grave',val:100,unid:'mg/kg/dia',via:'VO',freq:'dividir 6/6h (máx 4000 mg/dia)',maxAbs:4000,unidMax:'mg/dia'},
+],
+dil:{apres:'Susp 250 mg/5 mL (50 mg/mL)',alvo:50,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp: vol(mL) = dose(mg)/50. Refrigerado após reconstituição (14 dias).'},
+ref:'Harriet Lane 23ª ed. 2024 — Cephalexin; Taketomo 31ª ed. 2024'},
+
+{id:'ceftriaxona_ped',nome:'Ceftriaxona',cat:'antibio',
+indicacao:'Meningite, pneumonia grave, sepse, otite não responsiva à VO',
+prep:'Pó para injeção 500 mg / 1 g; IV ou IM.',
+doses:[
+{label:'Infecções comuns IV/IM',val:50,unid:'mg/kg/dia',via:'IV ou IM',freq:'1x ao dia (máx 2000 mg/dia)',maxAbs:2000,unidMax:'mg/dia'},
+{label:'Meningite',val:100,unid:'mg/kg/dia',via:'IV',freq:'dividir 12/12h (máx 4000 mg/dia)',maxAbs:4000,unidMax:'mg/dia'},
+{label:'Gonorreia — dose única',val:125,unid:'mg',via:'IM',freq:'dose única (> 45 kg: 250 mg)',maxAbs:250,unidMax:'mg'},
+],
+alertas:['NÃO misturar com soluções contendo cálcio (precipitação pulmonar/renal — óbito relatado em neonatos)','Evitar em icterícia neonatal significativa (deslocamento de bilirrubina)','IM: diluir em lidocaína 1% para reduzir dor'],
+dil:{apres:'Po 500 mg e 1 g',alvo:40,diluente:'SF 0,9% ou SG 5%',vol_final:50,unit:'mg',nota:'IV: reconstituir e diluir para 20-40 mg/mL; infundir em 30 min. IM: diluir em lidocaína 1% sem epinefrina (350 mg/mL).'},
+ref:'Harriet Lane 23ª ed. 2024 — Ceftriaxone; Taketomo 31ª ed. 2024'},
+
+{id:'smx_tmp',nome:'Sulfametoxazol + Trimetoprima (SMX-TMP)',cat:'antibio',
+indicacao:'ITU, pneumocistose (PCP), toxoplasmose, MRSA ambulatorial, otite (alternativa)',
+prep:'Suspensão 40/8 mg/mL (200/40 mg/5 mL); comp 400/80 mg e 800/160 mg.',
+doses:[
+{label:'ITU — em TMP',val:8,unid:'mg/kg/dia (TMP)',via:'VO',freq:'dividir 12/12h x 7-10 dias',maxAbs:320,unidMax:'mg/dia TMP'},
+{label:'Profilaxia PCP — em TMP',val:5,unid:'mg/kg/dia (TMP)',via:'VO',freq:'1x ao dia ou 3x/semana',maxAbs:320,unidMax:'mg/dia TMP'},
+{label:'Tratamento PCP — em TMP',val:15,unid:'mg/kg/dia (TMP)',via:'VO ou IV',freq:'dividir 6/6h x 21 dias',maxAbs:640,unidMax:'mg/dia TMP'},
+{label:'MRSA (celulite) — em TMP',val:8,unid:'mg/kg/dia (TMP)',via:'VO',freq:'dividir 12/12h x 5-7 dias',maxAbs:320,unidMax:'mg/dia TMP'},
+],
+alertas:['Hipercalemia em altas doses (bloqueia secreção tubular de K+)','Não usar < 2 meses','Fototossibilidade — protetor solar','Anemia megaloblástica com uso prolongado — suplementar folato se necessário'],
+dil:{apres:'Susp 40/8 mg/mL; comp 400/80 mg',alvo:8,diluente:'Oral',vol_final:0,unit:'mg',nota:'Dose em mg de TMP. Susp 8 mg TMP/mL: vol(mL) = dose_TMP(mg)/8. IV: diluir para 0,5-1 mg TMP/mL; infundir em 60-90 min.'},
+ref:'Harriet Lane 23ª ed. 2024 — Trimethoprim/Sulfamethoxazole; Taketomo 31ª ed. 2024'},
+
+{id:'claritromicina',nome:'Claritromicina',cat:'antibio',
+indicacao:'Infecções por Mycoplasma, H. pylori (combinado), MAC, faringotonsilite (alternativa)',
+prep:'Suspensão 125 mg/5 mL e 250 mg/5 mL; comp 250/500 mg.',
+doses:[
+{label:'Infecção respiratória/pele',val:15,unid:'mg/kg/dia',via:'VO',freq:'dividir 12/12h x 7-14 dias (máx 1000 mg/dia)',maxAbs:1000,unidMax:'mg/dia'},
+],
+alertas:['Monitorar QTc','Sabor amargo — difícil adesão em crianças pequenas','Interações: inibidor de CYP3A4 — ↑ nível de carbamazepina, tacrolimo, digoxina'],
+dil:{apres:'Susp 125 mg/5 mL (25 mg/mL) e 250 mg/5 mL (50 mg/mL)',alvo:25,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp 125: vol = dose/25 mL. Refrigerado após preparo (14 dias).'},
+ref:'Harriet Lane 23ª ed. 2024 — Clarithromycin; Taketomo 31ª ed. 2024'},
+
+{id:'fluconazol_ped',nome:'Fluconazol',cat:'antibio',
+indicacao:'Candidíase oral, vaginal, esofágica; meningite por Criptococo; profilaxia em imunossuprimidos',
+prep:'Susp oral 10 mg/mL e 40 mg/mL; IV 2 mg/mL premix.',
+doses:[
+{label:'Candidíase oral — 7-14 dias',val:3,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia (máx 200 mg/dia)',maxAbs:200,unidMax:'mg/dia'},
+{label:'Candidemia/Candidíase invasiva',val:12,unid:'mg/kg/dia',via:'VO ou IV',freq:'1x ao dia (máx 800 mg/dia)',maxAbs:800,unidMax:'mg/dia'},
+{label:'Meningite por Criptococo',val:12,unid:'mg/kg/dia',via:'IV ou VO',freq:'1x ao dia (máx 800 mg/dia)'},
+],
+alertas:['Hepatotoxicidade — monitorar enzimas com uso prolongado','Inibidor CYP2C9/3A4 — ↑ fenitoína, varfarina, ciclosporina','QTc prolongado em doses altas'],
+dil:{apres:'Susp oral 40 mg/mL; IV premix 2 mg/mL',alvo:40,diluente:'Oral ou IV premix',vol_final:0,unit:'mg',nota:'VO susp 40 mg/mL: vol = dose/40 mL. IV premix 2 mg/mL: vol = dose/2 mL; infundir a 10-20 mL/h máx.'},
+ref:'Harriet Lane 23ª ed. 2024 — Fluconazole; Taketomo 31ª ed. 2024'},
+
+{id:'salbutamol',nome:'Salbutamol (Albuterol)',cat:'resp',
+indicacao:'Broncoespasmo, asma, sibilância recorrente, hipercalemia',
+prep:'Solução nebulização 0,5% (5 mg/mL); MDI 100 mcg/puff; IV 500 mcg/mL.',
+doses:[
+{label:'Nebulização — crise leve/mod (< 5 kg)',val:0.15,unid:'mg/kg/dose',via:'Nebulização',freq:'20 min x 3 doses → reavaliar; mín 2,5 mg',maxAbs:5,unidMax:'mg/dose'},
+{label:'Nebulização — > 5 kg',val:0.15,unid:'mg/kg/dose',via:'Nebulização',freq:'20 min x 3 doses → reavaliar; máx 5 mg',maxAbs:5,unidMax:'mg/dose'},
+{label:'MDI com espaçador — < 6 anos',val:'2-4',unid:'puffs (100 mcg cada)',via:'MDI + espaçador',freq:'6/6h a 20/20 min (crise)'},
+{label:'MDI com espaçador — > 6 anos',val:'2-10',unid:'puffs',via:'MDI + espaçador',freq:'6/6h a 20/20 min (crise)'},
+{label:'IV — crise grave',val:5,unid:'mcg/kg IV bolus',via:'IV (5 min)',freq:'seguido de infusão 1-5 mcg/kg/min'},
+],
+alertas:['Taquicardia e tremor — dose-dependente','Hipocalemia com doses altas','MDI com espaçador = igual ou superior à nebulização em crises leves-moderadas'],
+dil:{apres:'Solução 0,5% = 5 mg/mL; MDI 100 mcg/puff',alvo:5,diluente:'SF 0,9% para completar 3-4 mL na nebulização',vol_final:4,unit:'mg',nota:'Nebulização: dose(mg)/5 mL + SF até 3-4 mL total. Ex: 2,5 mg = 0,5 mL + 3 mL SF.'},
+ref:'Harriet Lane 23ª ed. 2024 — Albuterol; Taketomo 31ª ed. 2024'},
+
+{id:'prednisolona',nome:'Prednisolona / Prednisona',cat:'resp',
+indicacao:'Asma (crise e manutenção), croup, síndrome nefrótica, doenças inflamatórias',
+prep:'Prednisolona sol oral 3 mg/mL e 1 mg/mL; comp prednisolona/prednisona 5/20 mg.',
+doses:[
+{label:'Asma — crise (3-5 dias)',val:1,unid:'mg/kg/dia',via:'VO (1x ao dia ou dividir 12/12h)',freq:'máx 40 mg/dia',maxAbs:40,unidMax:'mg/dia'},
+{label:'Croup — dose única',val:0.6,unid:'mg/kg',via:'VO ou IM',freq:'dose única (máx 16 mg)',maxAbs:16,unidMax:'mg'},
+{label:'Síndrome nefrótica — indução',val:60,unid:'mg/m2/dia',via:'VO',freq:'dividir 12/12h x 4-6 semanas (máx 80 mg/dia)',maxAbs:80,unidMax:'mg/dia'},
+{label:'Anti-inflamatório geral',val:1,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia (máx 40 mg/dia)',maxAbs:40,unidMax:'mg/dia'},
+],
+alertas:['Ciclos curtos (< 7 dias): sem necessidade de desmame','Uso prolongado: hiperglicemia, HAS, osteoporose, supressão adrenal','Não suspender abruptamente após uso > 2 semanas'],
+dil:{apres:'Sol oral 3 mg/mL e 1 mg/mL; comp 5 e 20 mg',alvo:3,diluente:'Oral',vol_final:0,unit:'mg',nota:'Sol 3 mg/mL: vol = dose/3 mL. Tomar com alimentos para reduzir irritação gástrica.'},
+ref:'Harriet Lane 23ª ed. 2024 — Prednisolone / Prednisone; Taketomo 31ª ed. 2024'},
+
+{id:'dexametasona_ped',nome:'Dexametasona',cat:'resp',
+indicacao:'Croup (1ª linha), meningite bacteriana, edema cerebral, asma grave, exacerbação de DPOC',
+prep:'Sol oral 0,5 mg/5 mL e 1 mg/mL; IV/IM 4 mg/mL.',
+doses:[
+{label:'Croup — dose única VO/IM',val:0.6,unid:'mg/kg',via:'VO ou IM',freq:'dose única (máx 16 mg)',maxAbs:16,unidMax:'mg'},
+{label:'Meningite bacteriana IV',val:0.15,unid:'mg/kg/dose',via:'IV',freq:'6/6h x 2-4 dias — iniciar com antibiótico'},
+{label:'Edema cerebral IV',val:0.5,unid:'mg/kg/dose — ataque',via:'IV',freq:'ataque; manutenção 0,25-0,5 mg/kg/dia dividir 6/6h'},
+{label:'Asma grave IV',val:0.6,unid:'mg/kg/dia',via:'IV ou VO',freq:'1x ao dia x 3-5 dias (máx 16 mg/dia)',maxAbs:16,unidMax:'mg/dia'},
+],
+alertas:['10x mais potente que prednisolona (mg por mg)','Hiperglicemia frequente — monitorar glicemia','Não usar com indometacina (risco de perfuração GI)'],
+dil:{apres:'IV 4 mg/mL; Sol oral 1 mg/mL',alvo:1,diluente:'SF 0,9% ou SG 5% (IV)',vol_final:10,unit:'mg',nota:'IV: diluir para 0,1-1 mg/mL. VO sol 1 mg/mL: vol = dose/1 mL.'},
+ref:'Harriet Lane 23ª ed. 2024 — Dexamethasone; Taketomo 31ª ed. 2024'},
+
+{id:'ipratropio_ped',nome:'Ipratrópio (Ipratropium)',cat:'resp',
+indicacao:'Asma grave (associado ao salbutamol), DPOC, broncoespasmo refratário',
+prep:'Sol nebulização 0,25 mg/mL (250 mcg/mL); MDI 20 mcg/puff.',
+doses:[
+{label:'Nebulização — < 2 anos',val:125,unid:'mcg/dose',via:'Nebulização',freq:'20/20 min x 3 → depois 6/6h'},
+{label:'Nebulização — 2-12 anos',val:250,unid:'mcg/dose',via:'Nebulização',freq:'20/20 min x 3 → depois 6/6h'},
+{label:'Nebulização — > 12 anos',val:500,unid:'mcg/dose',via:'Nebulização',freq:'20/20 min x 3 → depois 6/6h'},
+],
+alertas:['Não borrifar nos olhos (glaucoma, midríase)','Adicionar ao salbutamol nas primeiras 1-2h da crise grave','Efeito broncodilatador menor que salbutamol — sempre associar'],
+dil:{apres:'Sol 250 mcg/mL; MDI 20 mcg/puff',alvo:250,diluente:'Misturar na mesma nebulização do salbutamol',vol_final:0,unit:'mcg',nota:'Pode misturar ipratrópio + salbutamol na mesma nebulização (compatíveis). Completar com SF até 3-4 mL total.'},
+ref:'Harriet Lane 23ª ed. 2024 — Ipratropium; Taketomo 31ª ed. 2024'},
+
+{id:'fenobarbital_ped',nome:'Fenobarbital',cat:'neuro',
+indicacao:'Convulsões agudas (1ª linha < 2 anos), epilepsia crônica, status epilepticus',
+prep:'Amp 200 mg/mL; comp 50/100 mg; elixir 20 mg/5 mL.',
+doses:[
+{label:'Status epilepticus — ataque IV',val:20,unid:'mg/kg',via:'IV (20-30 min)',freq:'pode repetir 5-10 mg/kg até máx 40 mg/kg total'},
+{label:'Epilepsia — manutenção VO/IV',val:3,unid:'mg/kg/dia',via:'VO ou IV',freq:'1-2x ao dia (ajustar pelo nível sérico)',maxAbs:180,unidMax:'mg/dia'},
+{label:'Neonato — manutenção',val:3,unid:'mg/kg/dia',via:'VO ou IV',freq:'1-2x ao dia'},
+],
+alertas:['Depressão respiratória — monitorar com ataque IV','Nível terapêutico: 15-40 mcg/mL','Sedação e comprometimento cognitivo com uso crônico — considerar alternativas em crianças > 2 anos','Indutor enzimático potente (CYP)'],
+dil:{apres:'Amp 200 mg/mL; comp 100 mg; elixir 20 mg/5 mL',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:20,unit:'mg',nota:'IV: diluir para ≤ 10 mg/mL; infundir ≤ 2 mg/kg/min. VO elixir 4 mg/mL: vol = dose/4.'},
+ref:'Harriet Lane 23ª ed. 2024 — Phenobarbital; Taketomo 31ª ed. 2024'},
+
+{id:'valproato',nome:'Valproato (Ácido Valpróico)',cat:'neuro',
+indicacao:'Epilepsia (ausências, mioclônicas, generalizadas), enxaqueca profilática, bipolar',
+prep:'Comp 250/500 mg; sol oral 250 mg/5 mL; IV 100 mg/mL.',
+doses:[
+{label:'Status epilepticus IV — ataque',val:20,unid:'mg/kg',via:'IV (5 min)',freq:'seguido de manutenção'},
+{label:'Epilepsia — manutenção VO',val:15,unid:'mg/kg/dia',via:'VO',freq:'dividir 8/8h a 12/12h; aumentar 5-10 mg/kg/semana até controle',maxAbs:60,unidMax:'mg/kg/dia'},
+{label:'Enxaqueca — profilaxia',val:15,unid:'mg/kg/dia',via:'VO',freq:'dividir 12/12h; máx 1000 mg/dia',maxAbs:1000,unidMax:'mg/dia'},
+],
+alertas:['Hepatotoxicidade fatal em < 2 anos (especialmente politerapia + doença metabólica) — EVITAR < 2 anos','Teratogênico — contracepção em adolescentes','Nível terapêutico: 50-100 mcg/mL','Plaquetopenia e coagulopatia — monitorar antes de cirurgias','Pancreatite — dor abdominal é alerta'],
+dil:{apres:'Sol oral 250 mg/5 mL (50 mg/mL); IV 100 mg/mL',alvo:50,diluente:'SF 0,9% ou SG 5% (IV)',vol_final:50,unit:'mg',nota:'IV: diluir para 2-20 mg/mL; infundir em 60 min. VO sol 50 mg/mL: vol = dose/50.'},
+ref:'Harriet Lane 23ª ed. 2024 — Valproic Acid; Taketomo 31ª ed. 2024'},
+
+{id:'carbamazepina',nome:'Carbamazepina',cat:'neuro',
+indicacao:'Epilepsia focal, tônico-clônica, neuralgia do trigêmio, bipolar',
+prep:'Comp 200/400 mg; suspensão 100 mg/5 mL.',
+doses:[
+{label:'Epilepsia — inicial (< 6 anos)',val:5,unid:'mg/kg/dia',via:'VO',freq:'dividir 8/8h; aumentar semanalmente até 10-20 mg/kg/dia'},
+{label:'Epilepsia — manutenção (6-12 anos)',val:10,unid:'mg/kg/dia',via:'VO',freq:'dividir 8/8h; máx 1000 mg/dia',maxAbs:1000,unidMax:'mg/dia'},
+{label:'Epilepsia — > 12 anos',val:200,unid:'mg/dose inicial',via:'VO',freq:'12/12h; aumentar 200 mg/semana até 800-1200 mg/dia',maxAbs:1200,unidMax:'mg/dia'},
+],
+alertas:['Síndrome de Stevens-Johnson (risco maior em HLA-B*15:02 — asiáticos)','Hiponatremia (SIADH)','Nível terapêutico: 4-12 mcg/mL','Indutor enzimático — múltiplas interações (ACO, outros antiepilépticos)','Aplasia medular rara — hemograma periódico'],
+dil:{apres:'Susp 100 mg/5 mL (20 mg/mL); comp 200 mg',alvo:20,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp 20 mg/mL: vol = dose/20. Tomar com alimentos. Não esmagar comp revestido.'},
+ref:'Harriet Lane 23ª ed. 2024 — Carbamazepine; Taketomo 31ª ed. 2024'},
+
+{id:'levetiracetam_ped',nome:'Levetiracetam',cat:'neuro',
+indicacao:'Epilepsia focal e generalizada, status epilepticus (alternativa IV)',
+prep:'Sol oral 100 mg/mL; comp 250/500/750 mg; IV 100 mg/mL.',
+doses:[
+{label:'Início — todas faixas',val:10,unid:'mg/kg/dia',via:'VO ou IV',freq:'dividir 12/12h; aumentar 10 mg/kg/dia a cada 2 semanas'},
+{label:'Manutenção — alvo',val:30,unid:'mg/kg/dia',via:'VO',freq:'dividir 12/12h; máx 60 mg/kg/dia ou 3000 mg/dia',maxAbs:3000,unidMax:'mg/dia'},
+{label:'Status epilepticus IV',val:40,unid:'mg/kg',via:'IV (15 min)',freq:'dose única (máx 3000 mg)',maxAbs:3000,unidMax:'mg'},
+],
+alertas:['Irritabilidade e alteração comportamental em 10-15% — pode melhorar com vitamina B6','Ajuste em insuficiência renal','Menor interação medicamentosa que outros antiepilépticos'],
+dil:{apres:'Sol oral 100 mg/mL; IV 100 mg/mL concentrado',alvo:15,diluente:'SF 0,9% (IV)',vol_final:20,unit:'mg',nota:'IV: diluir para ≤ 15 mg/mL; infundir em 15 min. VO sol 100 mg/mL: vol = dose/100.'},
+ref:'Harriet Lane 23ª ed. 2024 — Levetiracetam; Taketomo 31ª ed. 2024'},
+
+{id:'ondansetrona',nome:'Ondansetrona',cat:'gi',
+indicacao:'Vômitos (quimioterapia, pós-op, gastroenterite aguda)',
+prep:'Sol oral 4 mg/5 mL; comp ODT 4/8 mg; IV 2 mg/mL.',
+doses:[
+{label:'Gastroenterite VO (ODT sublingual)',val:0.15,unid:'mg/kg/dose',via:'VO/SL (ODT)',freq:'dose única ou 8/8h x 2 (máx 8 mg/dose)',maxAbs:8,unidMax:'mg/dose'},
+{label:'Quimioterapia / Pós-op IV',val:0.15,unid:'mg/kg/dose',via:'IV (15 min)',freq:'8/8h (máx 8 mg/dose)',maxAbs:8,unidMax:'mg/dose'},
+],
+alertas:['Prolonga QTc — ECG se uso prolongado ou com outros fármacos que prolongam QT','Constipação frequente','Não usar < 1 mês para gastroenterite'],
+dil:{apres:'Sol oral 4 mg/5 mL (0,8 mg/mL); IV 2 mg/mL',alvo:0.8,diluente:'SF 0,9% ou SG 5% (IV)',vol_final:50,unit:'mg',nota:'VO sol: vol = dose/0,8 mL. IV: diluir para 0,08-1 mg/mL; infundir em 15 min.'},
+ref:'Harriet Lane 23ª ed. 2024 — Ondansetron; Taketomo 31ª ed. 2024'},
+
+{id:'omeprazol_ped',nome:'Omeprazol',cat:'gi',
+indicacao:'DRGE, úlcera péptica, esofagite erosiva, H. pylori (combinado)',
+prep:'Cáps 20/40 mg; susp extemporânea 2 mg/mL; IV 40 mg pó.',
+doses:[
+{label:'DRGE — < 2 anos',val:0.7,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia; máx 3 mg/kg/dia ou 20 mg/dia',maxAbs:20,unidMax:'mg/dia'},
+{label:'DRGE/Úlcera — 2-16 anos (< 20 kg)',val:10,unid:'mg/dose',via:'VO',freq:'1x ao dia'},
+{label:'DRGE/Úlcera — 2-16 anos (> 20 kg)',val:20,unid:'mg/dose',via:'VO',freq:'1x ao dia'},
+{label:'H. pylori — combinado',val:1,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia x 14 dias (com amox + claritro)'},
+],
+alertas:['Tomar 30-60 min antes do café da manhã','Não esmagar cápsulas — abrir e misturar grânulos em líquido ácido (suco de maçã)','Hipomagnesiemia com uso prolongado','IBPs: risco de C. difficile e pneumonia com uso prolongado'],
+dil:{apres:'Cáps 20 mg; susp 2 mg/mL',alvo:2,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp extemporânea 2 mg/mL: vol = dose/2. Cáps: abrir e misturar grânulos em líquido ácido.'},
+ref:'Harriet Lane 23ª ed. 2024 — Omeprazole; Taketomo 31ª ed. 2024'},
+
+{id:'metoclopramida_ped',nome:'Metoclopramida',cat:'gi',
+indicacao:'DRGE refratária, dismotilidade gástrica, pré-medicação endoscopia',
+prep:'Sol oral 1 mg/mL; amp 5 mg/mL.',
+doses:[
+{label:'DRGE/dismotilidade',val:0.1,unid:'mg/kg/dose',via:'VO ou IV',freq:'3x ao dia — 30 min antes das refeições (máx 0,5 mg/kg/dia)',maxAbs:10,unidMax:'mg/dose'},
+],
+alertas:['Reações extrapiramidais (distonia aguda) — mais frequentes em crianças; tratar com difenidramina','Não usar > 3 meses (discinesia tardia)','FDA: não recomendado < 1 ano para DRGE (risco/benefício desfavorável)'],
+dil:{apres:'Sol oral 1 mg/mL; amp 5 mg/mL',alvo:1,diluente:'SF 0,9% (IV)',vol_final:10,unit:'mg',nota:'VO: vol = dose/1 mL. IV: diluir para 0,2 mg/mL; infundir em 15 min.'},
+ref:'Harriet Lane 23ª ed. 2024 — Metoclopramide; Taketomo 31ª ed. 2024'},
+
+{id:'midazolam_ped',nome:'Midazolam',cat:'analg',
+indicacao:'Sedação procedural, pré-medicação, status epilepticus, sedação em VM',
+prep:'Amp 5 mg/mL e 1 mg/mL; sol oral 2 mg/mL.',
+doses:[
+{label:'Sedação procedural — IV',val:0.1,unid:'mg/kg',via:'IV (2 min)',freq:'titular; doses adicionais 0,05 mg/kg a cada 3 min; máx 0,4 mg/kg ou 10 mg',maxAbs:10,unidMax:'mg'},
+{label:'Sedação procedural — Intranasal',val:0.3,unid:'mg/kg',via:'Intranasal (5 mg/mL)',freq:'dose única; máx 10 mg — 0,2 mL em cada narina',maxAbs:10,unidMax:'mg'},
+{label:'Sedação procedural — VO',val:0.3,unid:'mg/kg',via:'VO (30 min antes)',freq:'dose única; máx 15 mg',maxAbs:15,unidMax:'mg'},
+{label:'Sedação procedural — Retal',val:0.5,unid:'mg/kg',via:'Retal',freq:'dose única; máx 15 mg',maxAbs:15,unidMax:'mg'},
+{label:'Status epilepticus — IM/IN',val:0.2,unid:'mg/kg',via:'IM ou Intranasal',freq:'dose única; máx 10 mg',maxAbs:10,unidMax:'mg'},
+{label:'Sedação VM — infusão',val:0.06,unid:'mg/kg/h',via:'IV contínuo',freq:'titular 0,03-0,18 mg/kg/h'},
+],
+alertas:['Depressão respiratória — ter O2 e flumazenil disponíveis','Hipotensão com IV rápido','Tolerância e abstinência com uso > 5 dias','Efeito paradoxal (agitação) em 5% das crianças'],
+dil:{apres:'Amp 5 mg/mL e 1 mg/mL; sol oral 2 mg/mL',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'IV: diluir para 0,5-1 mg/mL. IN: usar 5 mg/mL sem diluição (volume mínimo). VO: misturar sol em suco.'},
+ref:'Harriet Lane 23ª ed. 2024 — Midazolam; Taketomo 31ª ed. 2024'},
+
+{id:'cetamina',nome:'Cetamina (Ketamina)',cat:'analg',
+indicacao:'Sedação procedural, analgesia, status epilepticus refratário, broncoespasmo grave',
+prep:'Amp 50 mg/mL e 100 mg/mL.',
+doses:[
+{label:'Sedação procedural — IV',val:1.5,unid:'mg/kg',via:'IV (1 min)',freq:'ataque; repetir 0,5-1 mg/kg a cada 5-10 min se necessário'},
+{label:'Sedação procedural — IM',val:4,unid:'mg/kg',via:'IM',freq:'dose única; onset 3-5 min'},
+{label:'Analgesia IV — dose sub-dissociativa',val:0.3,unid:'mg/kg',via:'IV (15 min)',freq:'dose única ou repetir'},
+{label:'Status epilepticus — infusão',val:1.5,unid:'mg/kg IV bolus',via:'IV',freq:'seguido de 2,5-7,5 mg/kg/h em infusão'},
+],
+alertas:['Pré-medicar com midazolam 0,05 mg/kg IV para prevenir alucinações/emergência agitada em > 8 anos','Laringoespasmo raro — ter equipamento de VA disponível','Contraindicado: HAS não controlada, glaucoma, hipertensão intracraniana grave','Preserva reflexos de VA e tônus muscular — vantagem em asma grave'],
+dil:{apres:'Amp 50 mg/mL e 100 mg/mL',alvo:10,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'IV: diluir para 1-10 mg/mL. IM: usar 100 mg/mL sem diluição para minimizar volume.'},
+ref:'Harriet Lane 23ª ed. 2024 — Ketamine; Taketomo 31ª ed. 2024'},
+
+{id:'morfina_ped',nome:'Morfina',cat:'analg',
+indicacao:'Dor moderada-grave, pós-operatório, crise de doença falciforme, cuidados paliativos',
+prep:'Amp 10 mg/mL; sol oral 2 mg/mL e 10 mg/mL.',
+doses:[
+{label:'Analgesia IV/SC bolus — > 6 meses',val:0.1,unid:'mg/kg/dose',via:'IV ou SC (lento)',freq:'3-4h (máx 15 mg/dose)',maxAbs:15,unidMax:'mg/dose'},
+{label:'Analgesia VO',val:0.3,unid:'mg/kg/dose',via:'VO',freq:'4/4h a 6/6h (máx 15-20 mg/dose)',maxAbs:20,unidMax:'mg/dose'},
+{label:'Infusão contínua IV',val:0.03,unid:'mg/kg/h',via:'IV contínuo',freq:'titular 0,01-0,04 mg/kg/h'},
+{label:'< 6 meses',val:0.05,unid:'mg/kg/dose',via:'IV',freq:'4-6/4-6h — usar metade da dose de adultos'},
+],
+alertas:['Ter naloxona disponível (0,01-0,1 mg/kg IV)','Depressão respiratória — monitorar SpO2 e FR','Náuseas e prurido frequentes','Constipação — iniciar laxativo profilático','Tolerância e dependência com uso prolongado'],
+dil:{apres:'Amp 10 mg/mL; sol oral 2 mg/mL',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:10,unit:'mg',nota:'IV bolus: diluir para 1 mg/mL. Infusão: diluir para 0,1-1 mg/mL. VO: sol 2 mg/mL = vol(mL) = dose/2.'},
+ref:'Harriet Lane 23ª ed. 2024 — Morphine; Taketomo 31ª ed. 2024'},
+
+{id:'furosemida_ped',nome:'Furosemida',cat:'diur',
+indicacao:'Edema (ICC, síndrome nefrótica, renal), ascite, oligúria, hipercalcemia',
+prep:'Amp 10 mg/mL; sol oral 10 mg/mL.',
+doses:[
+{label:'IV/IM',val:1,unid:'mg/kg/dose',via:'IV (1-2 min) ou IM',freq:'6/6h a 12/12h (máx 6 mg/kg/dose ou 200 mg/dose)',maxAbs:200,unidMax:'mg/dose'},
+{label:'VO',val:2,unid:'mg/kg/dose',via:'VO',freq:'6/6h a 12/12h (máx 6 mg/kg/dose)',maxAbs:200,unidMax:'mg/dose'},
+],
+alertas:['Hipocalemia, hiponatremia, hipomagnesemia — monitorar eletrólitos','Ototoxicidade com doses altas ou IV rápido — infundir lentamente (> 1 mg/kg/min)','Resistência à furosemida em uso prolongado — combinar com tiazídico'],
+dil:{apres:'Amp 10 mg/mL; sol oral 10 mg/mL',alvo:2,diluente:'SF 0,9% (IV)',vol_final:10,unit:'mg',nota:'IV: diluir para 1-2 mg/mL; infundir ≤ 0,5 mg/kg/min. VO sol 10 mg/mL: vol = dose/10.'},
+ref:'Harriet Lane 23ª ed. 2024 — Furosemide; Taketomo 31ª ed. 2024'},
+
+{id:'espironolactona_ped',nome:'Espironolactona',cat:'diur',
+indicacao:'ICC (poupador de K+), síndrome nefrótica, hiperaldosteronismo, DBP',
+prep:'Comp 25/100 mg; susp extemporânea 5 mg/mL.',
+doses:[
+{label:'Diurético poupador K+',val:1,unid:'mg/kg/dia',via:'VO',freq:'1-2x ao dia (máx 200 mg/dia)',maxAbs:200,unidMax:'mg/dia'},
+],
+alertas:['Hipercalemia — monitorar K+ sérico, especialmente com IECA ou BRA','Ginecomastia com uso prolongado em adolescentes do sexo masculino','Não usar em insuficiência renal grave (clearance < 10 mL/min)'],
+dil:{apres:'Comp 25 mg; susp 5 mg/mL',alvo:5,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp 5 mg/mL: vol = dose/5. Tomar com alimentos.'},
+ref:'Harriet Lane 23ª ed. 2024 — Spironolactone; Taketomo 31ª ed. 2024'},
+
+{id:'captopril_ped',nome:'Captopril',cat:'cardio',
+indicacao:'ICC, HAS, cardiomiopatia, síndrome nefrótica (proteinúria)',
+prep:'Comp 12,5/25/50 mg; susp extemporânea 1 mg/mL.',
+doses:[
+{label:'Lactente (0-3 meses) — início',val:0.01,unid:'mg/kg/dose',via:'VO',freq:'8/8h; aumentar gradualmente até 0,5 mg/kg/dose'},
+{label:'Criança — dose usual',val:0.3,unid:'mg/kg/dose',via:'VO',freq:'8/8h; máx 6 mg/kg/dia ou 450 mg/dia',maxAbs:150,unidMax:'mg/dose'},
+],
+alertas:['Neonatos e RNPT: muito sensíveis — iniciar com dose mínima e monitorar PA de perto','Hipercalemia (especialmente com K+ e poupadores)','Tosse seca — considerar BRA (losartana) como alternativa','Não usar em gestantes (2º e 3º trimestres)'],
+dil:{apres:'Comp 25 mg; susp 1 mg/mL',alvo:1,diluente:'Oral',vol_final:0,unit:'mg',nota:'Susp 1 mg/mL: vol = dose/1. Administrar 1h antes das refeições.'},
+ref:'Harriet Lane 23ª ed. 2024 — Captopril; Taketomo 31ª ed. 2024'},
+
+{id:'enalapril',nome:'Enalapril',cat:'cardio',
+indicacao:'ICC, HAS, nefropatia diabética, proteinúria, cardiomiopatia',
+prep:'Comp 5/10/20 mg; susp extemporânea 1 mg/mL; IV enalaprilato 1,25 mg/mL.',
+doses:[
+{label:'HAS/ICC VO — > 1 mês',val:0.1,unid:'mg/kg/dia',via:'VO',freq:'1x ao dia; aumentar até 0,5 mg/kg/dia (máx 40 mg/dia)',maxAbs:40,unidMax:'mg/dia'},
+{label:'IV (Enalaprilato) — crise hipertensiva',val:0.005,unid:'mg/kg/dose',via:'IV (5 min)',freq:'6/6h; máx 0,01 mg/kg/dose ou 1,25 mg/dose',maxAbs:1.25,unidMax:'mg/dose'},
+],
+alertas:['Mesmos cuidados do captopril (hipercalemia, tosse, não usar na gestação)','Enalaprilato IV: hipotensão severa — monitorar PA contínua','Ajustar dose em insuficiência renal'],
+dil:{apres:'Comp 10 mg; susp 1 mg/mL; IV enalaprilato 1,25 mg/mL',alvo:1,diluente:'Oral / SF 0,9% (IV)',vol_final:10,unit:'mg',nota:'VO susp: vol = dose/1. IV enalaprilato: diluir para 0,025 mg/mL; infundir em 5 min.'},
+ref:'Harriet Lane 23ª ed. 2024 — Enalapril; Taketomo 31ª ed. 2024'},
+
+{id:'hidrocortisona_ped',nome:'Hidrocortisona',cat:'outros',
+indicacao:'Insuficiência adrenal, crise adrenal, hipotensão vasopressor-refratária, CAH',
+prep:'Amp Solu-Cortef 100/250/500 mg; comp 20 mg.',
+doses:[
+{label:'Crise adrenal — ataque IV',val:2,unid:'mg/kg/dose',via:'IV bolus',freq:'dose única de ataque; depois 100 mg/m2/dia em infusão contínua ou 4 doses',maxAbs:100,unidMax:'mg/dose'},
+{label:'Hipotensão vasopressor-refratária',val:1,unid:'mg/kg/dose',via:'IV',freq:'6/6h; máx 50 mg/dose',maxAbs:50,unidMax:'mg/dose'},
+{label:'Fisiológico — reposição CAH',val:8,unid:'mg/m2/dia',via:'VO',freq:'dividir 3x ao dia'},
+{label:'Dose de estresse (cirurgia/infecção grave)',val:50,unid:'mg/m2/dia',via:'IV',freq:'dividir 6/6h; reduzir rapidamente'},
+],
+alertas:['Hiperglicemia — monitorar glicemia frequentemente','Dose de estresse: 3-10x a dose de manutenção fisiológica','Reposição de mineralocorticoide (fludrocortisona) necessária em CAH'],
+dil:{apres:'Amp 100 mg po (Solu-Cortef)',alvo:1,diluente:'SF 0,9% ou SG 5%',vol_final:100,unit:'mg',nota:'IV: diluir para 1-2 mg/mL; infundir em 15-30 min. VO comp 20 mg: disponível em farmácias de manipulação.'},
+ref:'Harriet Lane 23ª ed. 2024 — Hydrocortisone; Taketomo 31ª ed. 2024'},
+
+{id:'vitamina_d_ped',nome:'Vitamina D (Colecalciferol)',cat:'outros',
+indicacao:'Prevenção e tratamento de raquitismo, deficiência de vitamina D, hipoparatireoidismo',
+prep:'Gotas 400-1000 UI/gota (verificar produto); comp 1000/5000/50000 UI.',
+doses:[
+{label:'Profilaxia — lactentes (0-12m)',val:400,unid:'UI/dia',via:'VO',freq:'1x ao dia'},
+{label:'Profilaxia — crianças (1-18a)',val:600,unid:'UI/dia',via:'VO',freq:'1x ao dia'},
+{label:'Tratamento deficiência leve (25-OH < 20 ng/mL)',val:1000,unid:'UI/dia',via:'VO',freq:'1x ao dia x 3 meses'},
+{label:'Tratamento raquitismo nutricional',val:2000,unid:'UI/dia',via:'VO',freq:'1x ao dia x 12 semanas'},
+],
+alertas:['Alvo sérico 25-OH VitD: 20-50 ng/mL','Hipercalcemia com superdosagem — monitorar se dose > 2000 UI/dia prolongada','Bebês amamentados: maior risco de deficiência','Obesidade e má absorção: podem necessitar doses maiores'],
+dil:{apres:'Gotas: concentração varia por produto (ler bula)',alvo:400,diluente:'Oral',vol_final:0,unit:'UI',nota:'Verificar UI por gota do produto disponível. Diluir em leite ou alimento se necessário.'},
+ref:'Harriet Lane 23ª ed. 2024 — Vitamin D; Taketomo 31ª ed. 2024 / AAP Guidelines 2022'},
+
+{id:'ferro_ped',nome:'Sulfato Ferroso / Ferro Polimatosado',cat:'outros',
+indicacao:'Anemia ferropriva (tratamento e prevenção), reposição em prematuros',
+prep:'Gotas SF 25 mg/mL (5 mg Fe elem/mL); xarope SF 25 mg/5 mL (5 mg Fe elem/mL); Fe polimatosado 150 mg/5 mL (30 mg Fe elem/5 mL).',
+doses:[
+{label:'Tratamento anemia ferropriva',val:3,unid:'mg/kg/dia de Fe elem',via:'VO',freq:'dividir 2-3x ao dia (máx 150-200 mg/dia de Fe elem)',maxAbs:200,unidMax:'mg Fe elem/dia'},
+{label:'Profilaxia — lactentes (4-12m)',val:1,unid:'mg/kg/dia de Fe elem',via:'VO',freq:'1x ao dia'},
+{label:'Prematuro — profilaxia',val:2,unid:'mg/kg/dia de Fe elem',via:'VO',freq:'1x ao dia; iniciar após 2 semanas de vida'},
+],
+alertas:['Coloração escura das fezes — normal','Constipação — fracionar doses e aumentar fibras','Tomar em jejum ou com suco de vitamina C (aumenta absorção)','Não combinar com cálcio, antiácidos, chá (reduzem absorção)','Escurecimento dentário com sol oral — usar canudo, escovar após'],
+dil:{apres:'Gotas SF: 5 mg Fe elem/mL; xarope SF: 5 mg Fe elem/5 mL',alvo:5,diluente:'Oral',vol_final:0,unit:'mg_fe',nota:'Gotas (5 mg Fe/mL): vol(mL) = dose_Fe_elem(mg)/5. Diluir em suco de laranja se necessário.'},
+ref:'Harriet Lane 23ª ed. 2024 — Ferrous Sulfate; SBP — Deficiência de Ferro 2022; Taketomo 31ª ed. 2024'},
+];
+
+function renderGrid(){
+  var g=document.getElementById('dgrid');
+  var vis=DRUGS.filter(function(d){
+    var cm=catAtual==='todos'||d.cat===catAtual;
+    var bm=!buscaAtual||d.nome.toLowerCase().indexOf(buscaAtual)>=0||d.indicacao.toLowerCase().indexOf(buscaAtual)>=0;
+    return cm&&bm;
+  });
+  document.getElementById('drug-count').textContent=DRUGS.length+' medicamentos';
+  if(!vis.length){g.innerHTML='<div class="empty"><p>Nenhum medicamento encontrado.</p></div>';return;}
+  var html=[];
+  vis.forEach(function(d){
+    var isOpen=(aberto===d.id);
+    var h=[];
+    h.push('<div class="dc'+(isOpen?' open':'')+'" id="dc-'+d.id+'">');
+    h.push('<div class="dch" data-did="'+d.id+'">');
+    h.push('<div><div class="dn">'+d.nome+'</div><div class="di">'+d.indicacao+'</div></div>');
+    h.push('<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">');
+    h.push('<span class="dcat c-'+d.cat+'">'+(CAT_NOME[d.cat]||d.cat)+'</span>');
+    h.push('<span style="font-size:11px;color:var(--ink3)">'+(isOpen?'▲':'▼')+'</span>');
+    h.push('</div></div>');
+    h.push('<div class="dd'+(isOpen?' open':'')+'" id="dd-'+d.id+'" data-id="'+d.id+'">');
+    if(isOpen) h.push(renderDetalhe(d));
+    h.push('</div></div>');
+    html.push(h.join(''));
+  });
+  g.innerHTML=html.join('');
+}
+
+function toggle(id){
+  aberto=(aberto===id)?null:id;
+  renderGrid();
+  if(aberto){setTimeout(function(){
+    var el=document.getElementById('dc-'+id);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },50);}
+}
+
+function recalc(){
+  document.querySelectorAll('.dd.open').forEach(function(el){
+    var id=el.dataset.id;
+    var d=DRUGS.find(function(x){return x.id===id;});
+    if(d)el.innerHTML=renderDetalhe(d);
+  });
+}
+
+function fmt(n,dec){
+  if(n===null||n===undefined) return '—';
+  var v=parseFloat(n.toFixed(dec===undefined?3:dec));
+  return isNaN(v)?'—':v.toString();
+}
+
+function renderDetalhe(d){
+  var hasPt=P.kg!=null;
+  var h='';
+  if(d.alertas&&d.alertas.length){
+    d.alertas.forEach(function(a){
+      var cls=a.indexOf('NÃO')>=0||a.indexOf('Não usar')>=0||a.indexOf('Proibida')>=0?'alert-b':'warn-b';
+      h+='<div class="'+cls+'"><span>⚠️</span><span>'+a+'</span></div>';
+    });
+  }
+  if(d.prep){h+='<div class="ib-l" style="font-size:.63rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Apresentação</div><div class="prep-b">'+d.prep+'</div>';}
+
+  // Diluição
+  if(d.dil&&hasPt){
+    var dil=d.dil;
+    h+='<div class="dil-box"><div class="box-t">⚗️ Diluição e preparo — '+P.kg+' kg</div>';
+    h+='<div style="font-size:.72rem;color:#166534;margin-bottom:5px">'+dil.apres+'</div>';
+    h+='<div class="dil-step">'+dil.nota+'</div>';
+    // Per-dose volume for bolus drugs
+    if(dil.alvo&&dil.alvo>0&&!dil.infusao_continua){
+      var dosesCalc=d.doses.filter(function(dose){
+        if(!dose.val||typeof dose.val!=='number') return false;
+        var u=dose.unid.toLowerCase();
+        return (u.indexOf('mg/kg')>=0&&u.indexOf('/dia')<0&&u.indexOf('/min')<0&&u.indexOf('/h')<0)
+          ||(u.indexOf('mcg/kg')>=0&&u.indexOf('/min')<0&&u.indexOf('/h')<0)
+          ||(u.indexOf('mg/m2')>=0||u.indexOf('mg/m²')>=0)
+          ||(u.indexOf('mg/dose')>=0&&dose.val>0.1);
+      });
+      if(dosesCalc.length){
+        h+='<div class="dil-row">';
+        dosesCalc.forEach(function(dose){
+          var u=dose.unid.toLowerCase();
+          var doseMg=null,doseUnit='';
+          if(u.indexOf('mcg/kg')>=0&&u.indexOf('/min')<0){doseMg=dose.val*P.kg;doseUnit='mcg';}
+          else if(u.indexOf('mg/kg')>=0&&u.indexOf('/dia')<0&&u.indexOf('/min')<0){doseMg=dose.val*P.kg;doseUnit='mg';}
+          else if((u.indexOf('mg/m2')>=0||u.indexOf('mg/m²')>=0)&&P.sc){doseMg=dose.val*P.sc;doseUnit='mg';}
+          else if(u.indexOf('mg/dose')>=0){doseMg=dose.val;doseUnit='mg';}
+          if(doseMg===null) return;
+          if(dose.maxAbs&&doseMg>dose.maxAbs){doseMg=dose.maxAbs;}
+          var doseInAlvo=doseUnit==='mcg'&&dil.unit==='mg'?doseMg/1000:
+                         doseUnit==='mg'&&dil.unit==='mcg'?doseMg*1000:doseMg;
+          var vol=doseInAlvo/dil.alvo;
+          h+='<div class="dil-item"><div class="dil-val">'+fmt(vol,2)+' mL</div>';
+          h+='<div class="dil-lbl">'+dose.label+'<br>('+fmt(doseMg,2)+' '+doseUnit+'÷'+dil.alvo+' '+dil.unit+'/mL)</div></div>';
+        });
+        h+='</div>';
+      }
+    }
+    h+='</div>';
+  }
+
+  h+='<div class="ib-l" style="font-size:.63rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Doses</div>';
+  d.doses.forEach(function(dose){
+    if(!dose.unid||dose.val===null){
+      h+='<div class="box"><div class="box-t">'+dose.label+'</div>';
+      h+='<div class="dose-l" style="color:var(--ink2)">'+(dose.unid||'—')+'</div>';
+      if(dose.via)h+='<div class="dose-c">'+dose.via+(dose.freq?' · '+dose.freq:'')+'</div>';
+      h+='</div>';return;
+    }
+    var calcH='';
+    if(hasPt){
+      var u=dose.unid.toLowerCase();
+      var calc=null;
+      var calcRaw=null;
+      if(typeof dose.val==='number'){
+        if(u.indexOf('mcg/kg')>=0&&u.indexOf('/min')<0&&u.indexOf('/h')<0){calcRaw=dose.val*P.kg;calc=fmt(calcRaw,2)+' mcg';}
+        else if(u.indexOf('mg/kg/dia')>=0){calcRaw=dose.val*P.kg;calc=fmt(calcRaw,2)+' mg/dia';}
+        else if(u.indexOf('mg/kg')>=0&&u.indexOf('/dia')<0&&u.indexOf('/min')<0&&u.indexOf('/h')<0){calcRaw=dose.val*P.kg;calc=fmt(calcRaw,2)+' mg';}
+        else if((u.indexOf('mg/m2')>=0||u.indexOf('mg/m²')>=0)&&P.sc){calcRaw=dose.val*P.sc;calc=fmt(calcRaw,2)+' mg (SC '+P.sc+')';}
+        else if(u.indexOf('ui/kg')>=0){calcRaw=dose.val*P.kg;calc=Math.round(calcRaw)+' UI';}
+        else if(u.indexOf('mg/m2/dia')>=0&&P.sc){calcRaw=dose.val*P.sc;calc=fmt(calcRaw,2)+' mg/dia';}
+        else if(u.indexOf('mcg/kg/h')>=0){calcRaw=dose.val*P.kg;calc=fmt(calcRaw,3)+' mcg/h';}
+        else if(u.indexOf('mg/kg/h')>=0){calcRaw=dose.val*P.kg;calc=fmt(calcRaw,3)+' mg/h';}
+        if(calc&&dose.maxAbs&&calcRaw>dose.maxAbs){
+          calc='<span style="color:var(--red)">'+fmt(dose.maxAbs,1)+' '+dose.unidMax.split('(')[0].trim()+'</span>';
+          calc+='<div class="maxdose">⚠️ Limite: '+dose.maxAbs+' '+dose.unidMax+'</div>';
+        }
+        if(calc){
+          calcH='<div class="dose-sep"></div><div><div class="dose-calc">'+calc+'</div><div class="dose-c">para '+P.kg+' kg</div></div>';
+        }
+      } else if(typeof dose.val==='string'&&dose.val.indexOf('-')>=0){
+        var pts=dose.val.split('-').map(Number);
+        if(!isNaN(pts[0])&&!isNaN(pts[1])){
+          var factor=0;
+          if(u.indexOf('mg/kg')>=0&&u.indexOf('/dia')<0&&u.indexOf('/min')<0) factor=P.kg;
+          else if(u.indexOf('mcg/kg')>=0&&u.indexOf('/min')<0) factor=P.kg;
+          if(factor){
+            var lo=pts[0]*factor,hi=pts[1]*factor;
+            var loFinal=dose.maxAbs&&lo>dose.maxAbs?dose.maxAbs:lo;
+            var hiFinal=dose.maxAbs&&hi>dose.maxAbs?dose.maxAbs:hi;
+            calcH='<div class="dose-sep"></div><div><div class="dose-calc">'+fmt(loFinal,1)+'-'+fmt(hiFinal,1)+' '+dose.unid.replace('/kg','').replace('/kg/dose','')+'</div><div class="dose-c">para '+P.kg+' kg</div></div>';
+          }
+        }
+      }
+    }
+    h+='<div class="box"><div class="box-t">'+dose.label+'</div>';
+    h+='<div class="dose-row"><div>';
+    h+='<div class="dose-l">'+dose.val+' '+dose.unid+'</div>';
+    h+='<div class="dose-c">'+dose.via+(dose.freq?' · '+dose.freq:'')+'</div></div>';
+    h+=calcH+'</div>';
+    if(dose.obs)h+='<div class="dose-c" style="color:var(--amber);margin-top:4px">ℹ️ '+dose.obs+'</div>';
+    h+='</div>';
+  });
+  if(d.monit)h+='<div class="prep-b" style="margin-top:6px">📊 '+d.monit+'</div>';
+  if(d.ref)h+='<div class="ref">📚 '+d.ref+'</div>';
+  return h;
+}
+
+renderGrid();
+document.getElementById('dgrid').addEventListener('click',function(e){
+  var h=e.target.closest('[data-did]');
+  if(h){toggle(h.getAttribute('data-did'));}
+});
+</script>
+</body>
+</html>
