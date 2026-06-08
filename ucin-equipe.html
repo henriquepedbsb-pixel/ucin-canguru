@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caderneta Canguru — Equipe UCIN</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --azul-escuro: #0d3b6e; --azul-medio: #1a6896; --azul-claro: #e3eef6;
+      --fundo: #eef2f7; --card: #fff; --input-bg: #f8fbfd; --borda: #c8d6df;
+      --texto: #1a2332; --detalhe: #5a6e7f; --muted: #8fa3b1;
+      --ok: #16a34a; --ok-l: #dcfce7; --warn: #d97706; --warn-l: #fef3c7;
+      --danger: #dc2626; --danger-l: #fee2e2; --r: 13px; --rs: 9px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+           background: var(--fundo); color: var(--texto); min-height: 100vh; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ══ Login ══ */
+    .login-wrap { min-height: 100vh; display: flex; flex-direction: column;
+                  align-items: center; justify-content: center; padding: 24px; }
+    .login-brand { text-align: center; margin-bottom: 28px; }
+    .login-icon  { font-size: 52px; margin-bottom: 10px; }
+    .login-title { font-size: 22px; font-weight: 800; color: var(--azul-escuro); }
+    .login-sub   { font-size: 13px; color: var(--detalhe); margin-top: 4px; }
+    .login-card  { background: var(--card); border: 1px solid var(--borda);
+                   border-radius: var(--r); padding: 24px; width: 100%; max-width: 340px;
+                   box-shadow: 0 2px 12px rgba(13,59,110,.1); }
+    .login-err   { font-size: 12px; color: var(--danger); text-align: center; margin-top: 10px; }
+    .login-footer { font-size: 11px; color: var(--muted); margin-top: 20px; text-align: center; }
+
+    /* ══ App header ══ */
+    .app-hdr { background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
+               padding: 14px 16px; display: flex; align-items: center;
+               justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .app-hdr-title { font-size: 15px; font-weight: 700; color: #fff; }
+    .app-hdr-sub   { font-size: 11px; color: rgba(255,255,255,.7); }
+    .app-hdr-btn   { background: rgba(255,255,255,.18); border: none; border-radius: 8px;
+                     padding: 7px 12px; font-size: 12px; font-weight: 600; color: #fff;
+                     cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+    /* ══ Main layout ══ */
+    .page { max-width: 480px; margin: 0 auto; padding: 16px 16px 80px; }
+
+    /* ══ Card ══ */
+    .card { background: var(--card); border: 1px solid var(--borda);
+            border-radius: var(--r); padding: 16px; margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(13,59,110,.06); }
+    .card-head { font-size: 10.5px; font-weight: 700; letter-spacing: .09em;
+                 text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+                 display: flex; align-items: center; gap: 7px; }
+    .card-ico { width: 22px; height: 22px; background: var(--azul-claro);
+                border-radius: 6px; display: flex; align-items: center;
+                justify-content: center; font-size: 12px; }
+
+    /* ══ Fields ══ */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label { display: block; font-size: 12.5px; font-weight: 600;
+                   color: var(--texto); margin-bottom: 5px; }
+    .field-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .iw { display: flex; border: 1.5px solid var(--borda); border-radius: var(--rs);
+          overflow: hidden; background: var(--input-bg); transition: border-color .15s; }
+    .iw:focus-within { border-color: var(--azul-medio); }
+    .iw input, .iw select, .iw textarea {
+      flex: 1; min-width: 0; padding: 11px 12px; border: none; outline: none;
+      font-size: 15px; font-weight: 500; color: var(--texto); background: transparent;
+      font-family: inherit; }
+    .iw textarea { resize: vertical; min-height: 72px; font-size: 14px; }
+    .iw input::placeholder, .iw textarea::placeholder { color: var(--muted); font-weight: 400; }
+    .iw .unit { padding: 0 10px; font-size: 11.5px; font-weight: 600; color: var(--detalhe);
+                background: var(--fundo); border-left: 1px solid var(--borda);
+                display: flex; align-items: center; white-space: nowrap; }
+
+    /* ══ Buttons ══ */
+    .btn-primary { background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
+                   color: #fff; border: none; border-radius: var(--rs); padding: 13px 20px;
+                   font-size: 14px; font-weight: 700; cursor: pointer;
+                   transition: opacity .15s; -webkit-tap-highlight-color: transparent; }
+    .btn-primary:active { opacity: .82; }
+    .btn-ghost { background: transparent; color: var(--detalhe); border: 1.5px solid var(--borda);
+                 border-radius: var(--rs); padding: 10px 16px; font-size: 13px;
+                 font-weight: 600; cursor: pointer; }
+    .btn-danger { background: var(--danger-l); color: var(--danger); border: none;
+                  border-radius: var(--rs); padding: 8px 14px; font-size: 12px;
+                  font-weight: 600; cursor: pointer; }
+
+    /* ══ FAB ══ */
+    .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px;
+           background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
+           color: #fff; border: none; border-radius: 50%; font-size: 26px; cursor: pointer;
+           box-shadow: 0 4px 14px rgba(13,59,110,.4); display: flex; align-items: center;
+           justify-content: center; z-index: 20; -webkit-tap-highlight-color: transparent; }
+
+    /* ══ Baby card ══ */
+    .baby-card { background: var(--card); border: 1px solid var(--borda);
+                 border-radius: var(--r); padding: 14px 16px; margin-bottom: 10px;
+                 cursor: pointer; transition: box-shadow .15s;
+                 box-shadow: 0 1px 3px rgba(13,59,110,.06); }
+    .baby-card:active { box-shadow: 0 3px 10px rgba(13,59,110,.15); }
+    .baby-card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+    .baby-card-name { font-size: 14px; font-weight: 700; color: var(--texto); }
+    .baby-card-mae  { font-size: 12px; color: var(--detalhe); margin-top: 2px; }
+    .baby-card-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .meta-chip { font-size: 11px; font-weight: 600; padding: 3px 9px;
+                 border-radius: 999px; background: var(--azul-claro); color: var(--azul-escuro); }
+    .meta-chip.crie { background: var(--warn-l); color: #78350f; }
+    .meta-chip.alta { background: var(--ok-l);   color: #14532d; }
+
+    /* ══ Tabs ══ */
+    .tab-bar { display: flex; background: var(--fundo); border: 1px solid var(--borda);
+               border-radius: var(--rs); padding: 3px; gap: 3px; margin-bottom: 14px; }
+    .tab-btn { flex: 1; padding: 9px 4px; border: none; border-radius: 7px; font-size: 12px;
+               font-weight: 600; color: var(--detalhe); background: transparent;
+               cursor: pointer; transition: all .15s; text-align: center; }
+    .tab-btn.on { background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
+                  color: #fff; box-shadow: 0 2px 6px rgba(13,59,110,.25); }
+    .tab-panel { display: none; }
+    .tab-panel.on { display: block; }
+
+    /* ══ Baby detail info ══ */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .info-item { background: var(--fundo); border-radius: var(--rs); padding: 10px 12px; }
+    .info-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: .07em; color: var(--muted); margin-bottom: 4px; }
+    .info-val { font-size: 16px; font-weight: 700; color: var(--azul-escuro); }
+    .info-sub { font-size: 11px; color: var(--detalhe); margin-top: 2px; }
+    .crie-banner { background: var(--warn-l); border: 1px solid var(--warn);
+                   border-radius: var(--rs); padding: 11px 13px; margin-bottom: 12px;
+                   font-size: 12.5px; font-weight: 600; color: #78350f; }
+
+    /* ══ QR ══ */
+    .qr-wrap { text-align: center; padding: 16px 0; }
+    .qr-wrap img { border-radius: 8px; border: 4px solid var(--borda); }
+    .qr-link { font-size: 11px; color: var(--muted); margin-top: 8px; word-break: break-all; }
+    .qr-token { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700;
+                color: var(--azul-escuro); letter-spacing: 3px; margin: 8px 0; }
+
+    /* ══ Chat ══ */
+    .chat-list { min-height: 200px; max-height: 360px; overflow-y: auto;
+                 display: flex; flex-direction: column; gap: 8px;
+                 padding: 4px 0 12px; }
+    .msg { max-width: 82%; padding: 9px 12px; border-radius: 12px;
+           font-size: 13px; line-height: 1.5; }
+    .msg.equipe { align-self: flex-end; background: var(--azul-medio); color: #fff;
+                  border-bottom-right-radius: 4px; }
+    .msg.familia { align-self: flex-start; background: var(--fundo);
+                   color: var(--texto); border: 1px solid var(--borda);
+                   border-bottom-left-radius: 4px; }
+    .msg-meta { font-size: 10px; margin-top: 4px; opacity: .7; }
+    .msg-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
+    .chat-form { display: flex; gap: 8px; margin-top: 10px;
+                 border-top: 1px solid var(--borda); padding-top: 12px; }
+    .chat-input-wrap { flex: 1; }
+    .chat-input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--borda);
+                  border-radius: var(--rs); font-size: 14px; font-family: inherit;
+                  outline: none; background: var(--input-bg); color: var(--texto); }
+    .chat-input:focus { border-color: var(--azul-medio); }
+
+    /* ══ Medidas list ══ */
+    .med-row { display: flex; justify-content: space-between; align-items: center;
+               padding: 9px 0; border-bottom: 1px dotted var(--borda); }
+    .med-row:last-child { border-bottom: none; }
+    .med-date { font-size: 12px; color: var(--detalhe); }
+    .med-vals { display: flex; gap: 12px; }
+    .med-val  { font-size: 13px; font-weight: 600; color: var(--azul-escuro); }
+    .med-lbl  { font-size: 10px; color: var(--muted); }
+
+    /* ══ Prescrição ══ */
+    .rx-item-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+    .rx-item-name { flex: 1; }
+    .rx-item-dose { width: 110px; flex-shrink: 0; }
+    .rx-remove { background: var(--danger-l); border: none; border-radius: 6px;
+                 width: 32px; height: 40px; color: var(--danger); cursor: pointer;
+                 font-size: 16px; flex-shrink: 0; }
+
+    /* ══ Search ══ */
+    .search-wrap { margin-bottom: 14px; }
+    .search-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--borda);
+                    border-radius: var(--rs); font-size: 15px; font-family: inherit;
+                    outline: none; background: var(--card); color: var(--texto); }
+    .search-input:focus { border-color: var(--azul-medio); }
+
+    /* ══ Toast ══ */
+    #toasts { position: fixed; top: 70px; right: 16px; z-index: 999; display: flex;
+              flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast { padding: 10px 16px; border-radius: var(--rs); font-size: 13px; font-weight: 600;
+             animation: slideIn .25s ease; max-width: 260px; }
+    .toast-ok  { background: var(--ok);    color: #fff; }
+    .toast-err { background: var(--danger); color: #fff; }
+    .toast-info{ background: var(--azul-medio); color: #fff; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+
+    /* ══ Loading ══ */
+    .loading-wrap { text-align: center; padding: 40px 16px; color: var(--muted);
+                    font-size: 14px; }
+
+    /* ══ Print (QR) ══ */
+    @media print {
+      body * { visibility: hidden; }
+      .print-area, .print-area * { visibility: visible; }
+      .print-area { position: fixed; top: 0; left: 0; width: 100%; }
+    }
+    .print-area { display: none; }
+
+    /* ══ Back button ══ */
+    .back-btn { background: none; border: none; color: rgba(255,255,255,.85); font-size: 22px;
+                cursor: pointer; padding: 4px 6px; margin-right: 4px; }
+    .hdr-center { flex: 1; }
+  </style>
+</head>
+<body>
+<div id="toasts"></div>
+
+<!-- ═══════════ SCREEN: LOGIN ═══════════ -->
+<div id="s-login" class="screen active">
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="login-icon">🦘</div>
+      <h1 class="login-title">Caderneta Canguru</h1>
+      <p class="login-sub">Painel da Equipe UCIN · HMIB</p>
+    </div>
+    <div class="login-card">
+      <div class="field">
+        <label class="field-label" for="pin-inp">PIN da equipe</label>
+        <div class="iw">
+          <input id="pin-inp" type="password" inputmode="numeric"
+                 placeholder="••••" maxlength="8"
+                 onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:4px" onclick="doLogin()">
+        Entrar
+      </button>
+      <p id="login-err" class="login-err" style="display:none">PIN incorreto</p>
+    </div>
+    <p class="login-footer">PedNeo · Dr. Henrique Flávio G. Gomes · CRM-DF 14.611</p>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: DASHBOARD ═══════════ -->
+<div id="s-dash" class="screen">
+  <div class="app-hdr">
+    <div>
+      <div class="app-hdr-title">🦘 Caderneta Canguru</div>
+      <div class="app-hdr-sub">Equipe UCIN · HMIB</div>
+    </div>
+    <button class="app-hdr-btn" onclick="doLogout()">Sair</button>
+  </div>
+  <div class="page">
+    <div class="search-wrap">
+      <input id="search-inp" class="search-input" type="text"
+             placeholder="🔍  Buscar por nome ou leito…" oninput="filterBabies()">
+    </div>
+    <div id="baby-list">
+      <div class="loading-wrap">Carregando…</div>
+    </div>
+  </div>
+  <button class="fab" onclick="goTo('form')" title="Cadastrar bebê">+</button>
+</div>
+
+<!-- ═══════════ SCREEN: NEW BABY FORM ═══════════ -->
+<div id="s-form" class="screen">
+  <div class="app-hdr">
+    <button class="back-btn" onclick="goTo('dash')">‹</button>
+    <div class="hdr-center">
+      <div class="app-hdr-title">Cadastrar bebê</div>
+    </div>
+  </div>
+  <div class="page">
+    <div class="card">
+      <div class="card-head"><div class="card-ico">👶</div>Identificação</div>
+      <div class="field">
+        <label class="field-label" for="f-mae">Nome da mãe *</label>
+        <div class="iw"><input id="f-mae" type="text" placeholder="Nome completo da mãe"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f-bebe">Nome do bebê (opcional)</label>
+        <div class="iw"><input id="f-bebe" type="text" placeholder="Se já definido"></div>
+      </div>
+      <div class="field-row2">
+        <div>
+          <label class="field-label" for="f-sexo">Sexo</label>
+          <div class="iw">
+            <select id="f-sexo">
+              <option value="">—</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="field-label" for="f-leito">Leito</label>
+          <div class="iw"><input id="f-leito" type="text" placeholder="Ex: 03A"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-ico">📅</div>Nascimento</div>
+      <div class="field">
+        <label class="field-label" for="f-nasc">Data de nascimento *</label>
+        <div class="iw"><input id="f-nasc" type="date" oninput="checkCrie()"></div>
+      </div>
+      <div class="field-row2">
+        <div>
+          <label class="field-label" for="f-ig-sem">IG (semanas) *</label>
+          <div class="iw">
+            <input id="f-ig-sem" type="number" inputmode="numeric"
+                   placeholder="28" min="22" max="41" oninput="checkCrie()">
+            <span class="unit">sem</span>
+          </div>
+        </div>
+        <div>
+          <label class="field-label" for="f-ig-dias">IG (dias)</label>
+          <div class="iw">
+            <input id="f-ig-dias" type="number" inputmode="numeric"
+                   placeholder="0" min="0" max="6">
+            <span class="unit">dias</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-ico">⚖️</div>Antropometria ao nascer</div>
+      <div class="field-row3">
+        <div>
+          <label class="field-label" for="f-peso">Peso *</label>
+          <div class="iw">
+            <input id="f-peso" type="number" inputmode="decimal"
+                   placeholder="1200" step="1" oninput="checkCrie()">
+            <span class="unit">g</span>
+          </div>
+        </div>
+        <div>
+          <label class="field-label" for="f-comp">Comp.</label>
+          <div class="iw">
+            <input id="f-comp" type="number" inputmode="decimal" placeholder="38.0" step="0.1">
+            <span class="unit">cm</span>
+          </div>
+        </div>
+        <div>
+          <label class="field-label" for="f-pc">PC</label>
+          <div class="iw">
+            <input id="f-pc" type="number" inputmode="decimal" placeholder="26.0" step="0.1">
+            <span class="unit">cm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRIE indicator -->
+    <div id="crie-info" style="display:none">
+      <div style="background:var(--warn-l);border:1px solid var(--warn);border-radius:var(--rs);
+                  padding:12px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:#78350f">
+        ⚠️ CRIE indicado — RNPT &lt; 1500g ou &lt; 33 semanas<br>
+        <span style="font-weight:400;font-size:12px">Encaminhar ao CRIE/DF para vacinas especiais na alta</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-ico">📝</div>Observações</div>
+      <div class="iw"><textarea id="f-obs" placeholder="Diagnóstico, intercorrências, informações relevantes…"></textarea></div>
+    </div>
+
+    <button class="btn-primary" style="width:100%" onclick="submitBaby()">
+      Cadastrar e gerar QR Code
+    </button>
+    <button class="btn-ghost" style="width:100%;margin-top:8px" onclick="goTo('dash')">
+      Cancelar
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: BABY DETAIL ═══════════ -->
+<div id="s-detail" class="screen">
+  <div class="app-hdr">
+    <button class="back-btn" onclick="leaveBaby()">‹</button>
+    <div class="hdr-center">
+      <div class="app-hdr-title" id="d-title">—</div>
+      <div class="app-hdr-sub"  id="d-sub">—</div>
+    </div>
+  </div>
+  <div class="page">
+    <div class="tab-bar">
+      <button class="tab-btn on"  data-tab="info"     onclick="setTab('info')">📋 Info</button>
+      <button class="tab-btn"     data-tab="chat"     onclick="setTab('chat')">💬 Chat</button>
+      <button class="tab-btn"     data-tab="medidas"  onclick="setTab('medidas')">📏 Medidas</button>
+      <button class="tab-btn"     data-tab="rx"       onclick="setTab('rx')">🖊️ Receita</button>
+    </div>
+
+    <!-- ── TAB: Info + QR ── -->
+    <div id="tab-info" class="tab-panel on">
+      <div id="crie-banner" style="display:none" class="crie-banner">
+        ⚠️ CRIE indicado — encaminhar ao CRIE/DF para vacinas especiais
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-ico">👶</div>Dados de nascimento</div>
+        <div class="info-grid" id="info-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-ico">📱</div>QR Code — acesso da família</div>
+        <div class="qr-wrap">
+          <div class="qr-token" id="qr-token">—</div>
+          <img id="qr-img" src="" alt="QR Code" width="180" height="180">
+          <p class="qr-link" id="qr-link">—</p>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:12px"
+                onclick="printQR()">🖨️ Imprimir QR para família</button>
+      </div>
+    </div>
+
+    <!-- ── TAB: Chat ── -->
+    <div id="tab-chat" class="tab-panel">
+      <div class="card">
+        <div class="card-head"><div class="card-ico">💬</div>Mensagens em tempo real</div>
+        <div id="chat-list" class="chat-list">
+          <div class="msg-empty">Nenhuma mensagem ainda</div>
+        </div>
+        <div class="chat-form">
+          <div class="chat-input-wrap">
+            <input id="chat-inp" class="chat-input" type="text"
+                   placeholder="Mensagem para a família…"
+                   onkeydown="if(event.key==='Enter')sendMsg()">
+          </div>
+          <button class="btn-primary" style="padding:10px 14px" onclick="sendMsg()">
+            Enviar
+          </button>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label class="field-label" for="autor-inp">Autor (seu nome)</label>
+          <div class="iw">
+            <input id="autor-inp" type="text" placeholder="Dra. / Dr. / Enf. …">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Medidas ── -->
+    <div id="tab-medidas" class="tab-panel">
+      <div class="card">
+        <div class="card-head"><div class="card-ico">📏</div>Medidas registradas pela família</div>
+        <div id="medidas-list"><div class="msg-empty">Aguardando registros da família</div></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Receituário ── -->
+    <div id="tab-rx" class="tab-panel">
+      <div class="card">
+        <div class="card-head"><div class="card-ico">🖊️</div>Nova Receita</div>
+
+        <div class="field-row2">
+          <div>
+            <label class="field-label" for="rx-medico">Médico</label>
+            <div class="iw"><input id="rx-medico" type="text" placeholder="Dr(a). Nome"></div>
+          </div>
+          <div>
+            <label class="field-label" for="rx-crm">CRM</label>
+            <div class="iw"><input id="rx-crm" type="text" placeholder="DF XXXXX"></div>
+          </div>
+        </div>
+
+        <!-- Atalhos de medicamentos comuns -->
+        <p style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:.07em;margin-bottom:8px">Adicionar medicamento</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="rx-shortcuts">
+          <button class="btn-ghost" style="font-size:12px;padding:6px 10px"
+                  onclick="addRxItem('Sulfato ferroso', '2 mg/kg/dia de Fe elementar')">+ Ferro</button>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 10px"
+                  onclick="addRxItem('Vitamina D3 (Colecalciferol)', '800 UI/dia')">+ Vit D</button>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 10px"
+                  onclick="addRxItem('Polivitamínico ADC', '1 mL/dia VO')">+ Polivit</button>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 10px"
+                  onclick="addRxItem('Vitamina E', '25 UI/kg/dia VO')">+ Vit E</button>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 10px"
+                  onclick="addRxItem('Ácido fólico', '50 mcg/kg/dia VO')">+ Ac. Fólico</button>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 10px"
+                  onclick="addRxItem('', '')">+ Outro</button>
+        </div>
+
+        <div id="rx-items"></div>
+
+        <button class="btn-primary" style="width:100%;margin-top:8px"
+                onclick="saveRx()">Salvar receita</button>
+      </div>
+
+      <div id="rx-saved-list"></div>
+    </div>
+
+  </div><!-- /page -->
+</div>
+
+<!-- Print area -->
+<div class="print-area" id="print-area"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG — substitua com seus dados do Supabase
+═══════════════════════════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://vtdrjjjkgyivyewexegr.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_0csRqTbf3f6wVZ6tNzWekg_5YS4cAne';
+const FAMILIA_URL   = 'https://henriquepedbsb-pixel.github.io/ucin-canguru/ucin-familia.html';
+const PIN           = '6215';   // Altere para o PIN da equipe
+/* ─────────────────────────────────────────────────────────────── */
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ── State ── */
+let babies   = [];
+let selBaby  = null;
+let msgs     = [];
+let medidas  = [];
+let rxItems  = [];
+let channel  = null;
+let rxSaved  = [];
+
+/* ══════════════ NAVIGATION ══════════════ */
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + screen).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function setTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('on', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('on'));
+  document.getElementById('tab-' + tab).classList.add('on');
+}
+
+/* ══════════════ AUTH ══════════════ */
+function doLogin() {
+  const pin = document.getElementById('pin-inp').value.trim();
+  if (pin === PIN) {
+    document.getElementById('login-err').style.display = 'none';
+    localStorage.setItem('ucin_auth', '1');
+    goTo('dash');
+    loadBabies();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('pin-inp').value = '';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('ucin_auth');
+  leaveBaby();
+  goTo('login');
+}
+
+/* ══════════════ UTILS ══════════════ */
+function genToken() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length: 8}, () => c[Math.floor(Math.random() * c.length)]).join('');
+}
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'info');
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y, m, day] = (d.substr ? d.substr(0, 10) : d.toISOString().substr(0, 10)).split('-');
+  return `${day}/${m}/${y}`;
+}
+
+function fmtDatetime(d) {
+  const dt = new Date(d);
+  return dt.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit',
+    hour:'2-digit', minute:'2-digit'});
+}
+
+function calcIdades(bebe) {
+  const hoje   = new Date();
+  const nasc   = new Date(bebe.data_nasc);
+  const cronDias = Math.floor((hoje - nasc) / 86400000);
+
+  const premDias = (40 - bebe.ig_sem) * 7 - (bebe.ig_dias || 0);
+  const corrDias = cronDias - premDias;
+
+  const fmt = (dias) => {
+    if (dias < 0) return `${Math.ceil(-dias / 7)}s abaixo do termo`;
+    if (dias < 7)  return `${dias}d`;
+    const m = Math.floor(dias / 30);
+    const d = dias % 30;
+    return m > 0 ? `${m}m${d > 0 ? d + 'd' : ''}` : `${d}d`;
+  };
+
+  return {
+    cronologica: fmt(cronDias),
+    corrigida:   fmt(corrDias),
+    cronDias, corrDias
+  };
+}
+
+/* ══════════════ CRIE CHECK ══════════════ */
+function checkCrie() {
+  const peso = parseInt(document.getElementById('f-peso').value) || 0;
+  const ig   = parseInt(document.getElementById('f-ig-sem').value) || 99;
+  const crie = peso < 1500 || ig < 33;
+  document.getElementById('crie-info').style.display = crie ? 'block' : 'none';
+}
+
+/* ══════════════ LOAD BABIES ══════════════ */
+async function loadBabies() {
+  try {
+    const { data, error } = await sb.from('bebes')
+      .select('*').order('criado_em', { ascending: false });
+    if (error) throw error;
+    babies = data || [];
+    renderBabies(babies);
+  } catch (e) {
+    toast('Erro ao carregar bebês: ' + e.message, 'err');
+  }
+}
+
+function filterBabies() {
+  const q = document.getElementById('search-inp').value.toLowerCase();
+  const filtered = q
+    ? babies.filter(b =>
+        (b.nome_mae  || '').toLowerCase().includes(q) ||
+        (b.nome_bebe || '').toLowerCase().includes(q) ||
+        (b.leito     || '').toLowerCase().includes(q) ||
+        (b.token     || '').toLowerCase().includes(q))
+    : babies;
+  renderBabies(filtered);
+}
+
+function renderBabies(list) {
+  const el = document.getElementById('baby-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="msg-empty" style="padding:32px 0">Nenhum bebê cadastrado<br><small>Toque em + para cadastrar</small></div>';
+    return;
+  }
+  el.innerHTML = list.map(b => {
+    const ids = calcIdades(b);
+    return `<div class="baby-card" onclick="openBaby('${b.id}')">
+      <div class="baby-card-top">
+        <div>
+          <div class="baby-card-name">${b.nome_bebe || 'Bebê de ' + b.nome_mae}</div>
+          <div class="baby-card-mae">Mãe: ${b.nome_mae}${b.leito ? ' · Leito ' + b.leito : ''}</div>
+        </div>
+        <div style="font-size:20px">${b.sexo === 'F' ? '👧' : b.sexo === 'M' ? '👦' : '👶'}</div>
+      </div>
+      <div class="baby-card-meta">
+        <span class="meta-chip">${b.ig_sem}sem${b.ig_dias ? '+' + b.ig_dias + 'd' : ''} · ${b.peso_nasc}g</span>
+        <span class="meta-chip">Cron: ${ids.cronologica}</span>
+        <span class="meta-chip">Corr: ${ids.corrigida}</span>
+        ${b.crie ? '<span class="meta-chip crie">CRIE ⚠️</span>' : ''}
+        ${b.alta ? '<span class="meta-chip alta">Alta ✓</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════ CREATE BABY ══════════════ */
+async function submitBaby() {
+  const mae   = document.getElementById('f-mae').value.trim();
+  const nasc  = document.getElementById('f-nasc').value;
+  const igSem = parseInt(document.getElementById('f-ig-sem').value);
+  const peso  = parseInt(document.getElementById('f-peso').value);
+
+  if (!mae || !nasc || !igSem || !peso) {
+    toast('Preencha os campos obrigatórios (*)', 'err'); return;
+  }
+
+  const igDias = parseInt(document.getElementById('f-ig-dias').value) || 0;
+  const crie   = peso < 1500 || igSem < 33;
+  const token  = genToken();
+
+  const payload = {
+    token, nome_mae: mae,
+    nome_bebe: document.getElementById('f-bebe').value.trim() || null,
+    data_nasc: nasc, ig_sem: igSem, ig_dias: igDias,
+    peso_nasc: peso,
+    comp_nasc: parseFloat(document.getElementById('f-comp').value) || null,
+    pc_nasc:   parseFloat(document.getElementById('f-pc').value) || null,
+    sexo:      document.getElementById('f-sexo').value || null,
+    leito:     document.getElementById('f-leito').value.trim() || null,
+    obs:       document.getElementById('f-obs').value.trim() || null,
+    crie
+  };
+
+  try {
+    const { data, error } = await sb.from('bebes').insert(payload).select().single();
+    if (error) throw error;
+    toast('Bebê cadastrado com sucesso!', 'ok');
+    clearForm();
+    await loadBabies();
+    openBaby(data.id);
+  } catch (e) {
+    toast('Erro ao cadastrar: ' + e.message, 'err');
+  }
+}
+
+function clearForm() {
+  ['f-mae','f-bebe','f-nasc','f-ig-sem','f-ig-dias','f-peso','f-comp','f-pc','f-obs'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-sexo').value = '';
+  document.getElementById('f-leito').value = '';
+  document.getElementById('crie-info').style.display = 'none';
+}
+
+/* ══════════════ OPEN BABY DETAIL ══════════════ */
+async function openBaby(id) {
+  selBaby = babies.find(b => b.id === id);
+  if (!selBaby) { toast('Bebê não encontrado', 'err'); return; }
+
+  const ids = calcIdades(selBaby);
+  const nome = selBaby.nome_bebe || 'Bebê de ' + selBaby.nome_mae;
+  document.getElementById('d-title').textContent = nome;
+  document.getElementById('d-sub').textContent =
+    `Cron: ${ids.cronologica} · Corr: ${ids.corrigida}`;
+
+  /* CRIE banner */
+  document.getElementById('crie-banner').style.display = selBaby.crie ? 'block' : 'none';
+
+  /* Info grid */
+  const grid = document.getElementById('info-grid');
+  grid.innerHTML = [
+    { l:'Nascimento', v: fmtDate(selBaby.data_nasc) },
+    { l:'IG', v: `${selBaby.ig_sem}s${selBaby.ig_dias ? '+' + selBaby.ig_dias + 'd' : ''}` },
+    { l:'Peso nasc.', v: selBaby.peso_nasc + ' g' },
+    { l:'Comprimento', v: selBaby.comp_nasc ? selBaby.comp_nasc + ' cm' : '—' },
+    { l:'PC', v: selBaby.pc_nasc ? selBaby.pc_nasc + ' cm' : '—' },
+    { l:'Sexo', v: selBaby.sexo === 'M' ? '♂ Masc.' : selBaby.sexo === 'F' ? '♀ Fem.' : '—' },
+    { l:'Leito', v: selBaby.leito || '—' },
+    { l:'Cron. hoje', v: ids.cronologica },
+    { l:'Corrigida', v: ids.corrigida, full: true },
+  ].map(i =>
+    `<div class="info-item${i.full ? '" style="grid-column:1/-1' : ''}">
+       <div class="info-lbl">${i.l}</div>
+       <div class="info-val">${i.v}</div>
+     </div>`
+  ).join('');
+
+  /* QR Code */
+  const link = `${FAMILIA_URL}?t=${selBaby.token}`;
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}&bgcolor=ffffff&color=0d3b6e&margin=8`;
+  document.getElementById('qr-img').src = qrSrc;
+  document.getElementById('qr-token').textContent = selBaby.token;
+  document.getElementById('qr-link').textContent = link;
+
+  /* Load messages + medidas */
+  await loadMsgs();
+  await loadMedidas();
+  await loadRxSaved();
+
+  /* Subscribe real-time */
+  subscribe(id);
+
+  setTab('info');
+  goTo('detail');
+}
+
+function leaveBaby() {
+  unsubscribe();
+  selBaby = null;
+  goTo('dash');
+}
+
+/* ══════════════ MESSAGES ══════════════ */
+async function loadMsgs() {
+  try {
+    const { data } = await sb.from('mensagens')
+      .select('*').eq('bebe_id', selBaby.id)
+      .order('criado_em', { ascending: true });
+    msgs = data || [];
+    renderMsgs();
+  } catch(e) {}
+}
+
+function renderMsgs() {
+  const el = document.getElementById('chat-list');
+  if (!msgs.length) {
+    el.innerHTML = '<div class="msg-empty">Nenhuma mensagem ainda</div>';
+    return;
+  }
+  el.innerHTML = msgs.map(m =>
+    `<div class="msg ${m.tipo}">
+       <div>${m.texto}</div>
+       <div class="msg-meta">${m.autor} · ${fmtDatetime(m.criado_em)}</div>
+     </div>`
+  ).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function appendMsg(m) {
+  msgs.push(m);
+  const el = document.getElementById('chat-list');
+  if (el.querySelector('.msg-empty')) el.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'msg ' + m.tipo;
+  div.innerHTML = `<div>${m.texto}</div>
+    <div class="msg-meta">${m.autor} · ${fmtDatetime(m.criado_em)}</div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function sendMsg() {
+  const texto = document.getElementById('chat-inp').value.trim();
+  const autor = document.getElementById('autor-inp').value.trim() || 'Equipe UCIN';
+  if (!texto) return;
+  try {
+    const { error } = await sb.from('mensagens').insert({
+      bebe_id: selBaby.id, texto, autor, tipo: 'equipe'
+    });
+    if (error) throw error;
+    document.getElementById('chat-inp').value = '';
+  } catch(e) {
+    toast('Erro ao enviar: ' + e.message, 'err');
+  }
+}
+
+/* ══════════════ MEDIDAS ══════════════ */
+async function loadMedidas() {
+  try {
+    const { data } = await sb.from('medidas')
+      .select('*').eq('bebe_id', selBaby.id)
+      .order('data_med', { ascending: false }).limit(20);
+    medidas = data || [];
+    renderMedidas();
+  } catch(e) {}
+}
+
+function renderMedidas() {
+  const el = document.getElementById('medidas-list');
+  if (!medidas.length) {
+    el.innerHTML = '<div class="msg-empty">Aguardando registros da família</div>';
+    return;
+  }
+  el.innerHTML = medidas.map(m =>
+    `<div class="med-row">
+       <div class="med-date">📅 ${fmtDate(m.data_med)}</div>
+       <div class="med-vals">
+         ${m.peso       ? `<div><div class="med-val">${m.peso}g</div><div class="med-lbl">peso</div></div>` : ''}
+         ${m.comprimento? `<div><div class="med-val">${m.comprimento}cm</div><div class="med-lbl">comp</div></div>` : ''}
+         ${m.pc         ? `<div><div class="med-val">${m.pc}cm</div><div class="med-lbl">PC</div></div>` : ''}
+       </div>
+     </div>`
+  ).join('');
+}
+
+function appendMedida(m) {
+  medidas.unshift(m);
+  renderMedidas();
+  toast('Nova medida registrada pela família!', 'ok');
+}
+
+/* ══════════════ RECEITUÁRIO ══════════════ */
+function addRxItem(nome, dose) {
+  rxItems.push({ nome, dose });
+  renderRxItems();
+}
+
+function removeRxItem(i) {
+  rxItems.splice(i, 1);
+  renderRxItems();
+}
+
+function renderRxItems() {
+  const el = document.getElementById('rx-items');
+  if (!rxItems.length) { el.innerHTML = ''; return; }
+  el.innerHTML = rxItems.map((it, i) =>
+    `<div class="rx-item-row">
+       <div class="rx-item-name">
+         <div class="iw"><input type="text" placeholder="Medicamento" value="${it.nome}"
+              oninput="rxItems[${i}].nome=this.value"></div>
+       </div>
+       <div class="rx-item-dose">
+         <div class="iw"><input type="text" placeholder="Dose/posologia" value="${it.dose}"
+              oninput="rxItems[${i}].dose=this.value"></div>
+       </div>
+       <button class="rx-remove" onclick="removeRxItem(${i})">×</button>
+     </div>`
+  ).join('');
+}
+
+async function saveRx() {
+  const medico = document.getElementById('rx-medico').value.trim();
+  const crm    = document.getElementById('rx-crm').value.trim();
+  if (!medico || !crm) { toast('Preencha médico e CRM', 'err'); return; }
+  if (!rxItems.length)  { toast('Adicione ao menos um medicamento', 'err'); return; }
+
+  try {
+    const { error } = await sb.from('receituarios').insert({
+      bebe_id: selBaby.id, items: rxItems, medico_nome: medico, medico_crm: crm,
+      data_receita: new Date().toISOString().substr(0,10)
+    });
+    if (error) throw error;
+    toast('Receita salva!', 'ok');
+    rxItems = [];
+    renderRxItems();
+    await loadRxSaved();
+  } catch(e) {
+    toast('Erro ao salvar: ' + e.message, 'err');
+  }
+}
+
+async function loadRxSaved() {
+  try {
+    const { data } = await sb.from('receituarios')
+      .select('*').eq('bebe_id', selBaby.id)
+      .order('criado_em', { ascending: false }).limit(10);
+    rxSaved = data || [];
+    renderRxSaved();
+  } catch(e) {}
+}
+
+function renderRxSaved() {
+  const el = document.getElementById('rx-saved-list');
+  if (!rxSaved.length) { el.innerHTML = ''; return; }
+  el.innerHTML = rxSaved.map(r =>
+    `<div class="card">
+       <div class="card-head"><div class="card-ico">📄</div>
+         Receita de ${fmtDate(r.data_receita)} · ${r.medico_nome}
+       </div>
+       ${r.items.map(it =>
+         `<div style="padding:6px 0;border-bottom:1px dotted var(--borda);font-size:13px">
+            <strong>${it.nome}</strong><br>
+            <span style="color:var(--detalhe)">${it.dose}</span>
+          </div>`).join('')}
+       <div style="margin-top:10px;display:flex;gap:8px">
+         <button class="btn-primary" style="font-size:12px;padding:8px 14px"
+                 onclick="printRx('${r.id}')">🖨️ Imprimir</button>
+       </div>
+     </div>`
+  ).join('');
+}
+
+function printRx(rxId) {
+  const rx = rxSaved.find(r => r.id === rxId);
+  if (!rx || !selBaby) return;
+  const nome = selBaby.nome_bebe || 'Bebê de ' + selBaby.nome_mae;
+  const ids  = calcIdades(selBaby);
+  const html = `<div style="font-family:serif;max-width:480px;margin:0 auto;padding:24px">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:20px">🦘 UCIN Canguru · HMIB</div>
+      <div style="font-size:13px;color:#666">Receituário</div>
+    </div>
+    <div style="border:1px solid #ccc;border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px">
+      <strong>Paciente:</strong> ${nome}<br>
+      <strong>Nascimento:</strong> ${fmtDate(selBaby.data_nasc)} · IG ${selBaby.ig_sem}s · ${selBaby.peso_nasc}g<br>
+      <strong>Idade corrigida:</strong> ${ids.corrigida}
+    </div>
+    <div style="font-style:italic;font-size:20px;margin-bottom:12px">Rx</div>
+    ${rx.items.map((it,i) =>
+      `<div style="margin-bottom:12px">
+         <div style="font-size:14px"><strong>${i+1}. ${it.nome}</strong></div>
+         <div style="font-size:13px;padding-left:16px">${it.dose}</div>
+       </div>`).join('')}
+    <div style="margin-top:32px;text-align:right;font-size:13px">
+      Brasília, ${fmtDate(rx.data_receita)}<br><br>
+      _______________________________<br>
+      <strong>${rx.medico_nome}</strong><br>
+      CRM-DF ${rx.medico_crm}
+    </div>
+  </div>`;
+  const win = window.open('', '_blank');
+  win.document.write('<html><body>' + html + '</body></html>');
+  win.document.close();
+  win.print();
+}
+
+/* ══════════════ QR PRINT ══════════════ */
+function printQR() {
+  if (!selBaby) return;
+  const nome = selBaby.nome_bebe || 'Bebê de ' + selBaby.nome_mae;
+  const link = `${FAMILIA_URL}?t=${selBaby.token}`;
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}&color=0d3b6e&margin=10`;
+  const ids = calcIdades(selBaby);
+  const html = `<html><body style="font-family:sans-serif;text-align:center;padding:32px">
+    <div style="font-size:22px;font-weight:800;color:#0d3b6e">🦘 Caderneta Canguru</div>
+    <div style="font-size:15px;margin:8px 0 4px"><strong>${nome}</strong></div>
+    <div style="font-size:13px;color:#666">Nasc: ${fmtDate(selBaby.data_nasc)} · IG ${selBaby.ig_sem}s · ${selBaby.peso_nasc}g</div>
+    <div style="font-size:13px;color:#666;margin-bottom:20px">Idade corrigida: ${ids.corrigida}</div>
+    <img src="${qrSrc}" width="260" height="260" style="border:4px solid #e3eef6;border-radius:12px">
+    <div style="font-size:22px;font-weight:800;letter-spacing:4px;color:#0d3b6e;margin:14px 0 6px">${selBaby.token}</div>
+    <div style="font-size:12px;color:#888">Escaneie para acessar a caderneta do seu bebê</div>
+    ${selBaby.crie ? '<div style="margin-top:16px;background:#fef3c7;border:1px solid #d97706;border-radius:8px;padding:10px;font-size:12px;font-weight:600;color:#78350f">⚠️ CRIE indicado — vacinas especiais no CRIE/DF</div>' : ''}
+  </body></html>`;
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+
+/* ══════════════ REAL-TIME ══════════════ */
+function subscribe(bebeId) {
+  unsubscribe();
+  channel = sb.channel('baby-' + bebeId)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'mensagens',
+      filter: 'bebe_id=eq.' + bebeId
+    }, p => appendMsg(p.new))
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'medidas',
+      filter: 'bebe_id=eq.' + bebeId
+    }, p => appendMedida(p.new))
+    .subscribe();
+}
+
+function unsubscribe() {
+  if (channel) { sb.removeChannel(channel); channel = null; }
+}
+
+/* ══════════════ INIT ══════════════ */
+window.addEventListener('DOMContentLoaded', function() {
+  if (localStorage.getItem('ucin_auth') === '1') {
+    goTo('dash');
+    loadBabies();
+  }
+});
+</script>
+</body>
+</html>
